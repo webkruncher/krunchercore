@@ -1,0 +1,48 @@
+
+
+    string(ASCII 27 Esc)
+    set(NormalColor "${Esc}[m")
+    set(BlackColor "${Esc}[37m")
+    set(BlackBkColor "${Esc}[47m")
+    set(TealColor "${Esc}[36m")
+    set(TealBkColor "${Esc}[46m")
+    set(RedBkColor "${Esc}[41m")
+    set(BlueBkColor "${Esc}[44m")
+    set(RedBkColor "${Esc}[41m")
+    set(RedColor "${Esc}[31m")
+    set(GreenColor "${Esc}[32m")
+    set(YellowBkColor "${Esc}[43m")
+    set(YellowColor "${Esc}[33m")
+    set(Bold "${Esc}[1m")
+
+ 
+
+ 
+
+ 
+
+function(dump_cmake_variables flter )
+    message( "Start variables filtering for " ${flter} )
+    get_cmake_property(_variableNames VARIABLES)
+    list (SORT _variableNames)
+
+    list (FILTER _variableNames INCLUDE REGEX "${flter}" )
+
+    foreach (_variableName ${_variableNames})
+        if (ARGV0)
+            unset(MATCHED)
+            string(REGEX MATCH ${ARGV0} MATCHED ${_variableName})
+            if (NOT MATCHED)
+                continue()
+            endif()
+        endif()
+        message(STATUS "${_variableName}=${${_variableName}}")
+    endforeach()
+
+    message( "End variables for " ${flter} )
+endfunction()
+
+ 
+
+message( ${Bold} ${YellowColor} ${BlueBkColor} "Under Construction" ${NormalColor})
+
