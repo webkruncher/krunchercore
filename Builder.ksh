@@ -9,7 +9,7 @@ function ShowBuild
 	echo -ne "\033[32m"
 	for item in `find .. -name "link.txt"`; do
 		echo -ne "\033[35m${item}\033[0m\n\033[3m"
-		cat ${item} | grep "ar qc"
+		cat ${item} | grep "g++"
 	done
 	echo -ne "\033[0m"
 }

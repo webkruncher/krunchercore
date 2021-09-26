@@ -24,7 +24,7 @@ if(DEFINED ENV{KRUNCHER_DEV_LIBS})
 	set(LIBPATH /home/jmt/Info)
 else()
 	set(INCPATH /usr/local/include/infokruncher)
-	set(LIBPATH /usr/local/lib/infokruncher)
+	set(LIBPATH /usr/local/lib/infokruncherCHECK)
 endif()
 
 
