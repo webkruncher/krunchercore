@@ -1,7 +1,4 @@
 
-
-
-
 include(${CMAKE_CURRENT_LIST_DIR}/CMakeUtilities.txt)
 
 
@@ -24,7 +21,7 @@ if(DEFINED ENV{KRUNCHER_DEV_LIBS})
 	set(LIBPATH /home/jmt/Info)
 else()
 	set(INCPATH /usr/local/include/infokruncher)
-	set(LIBPATH /usr/local/lib/infokruncherCHECK)
+	set(LIBPATH /usr/local/lib/infokruncher)
 endif()
 
 
@@ -38,10 +35,25 @@ endfunction()
 
 function(IncludeLibraryPaths)
 	foreach(arg IN LISTS ARGN)
-		set(LIBRARY_PATHS ${LIBRARY_PATHS} ${LIBPATH}/${arg})
+		execute_process(
+			COMMAND bash "-c" "find ${LIBPATH}/${arg}/src.build -name \"*.a\" -exec dirname {} \; | xargs | tr ' ' ';' "
+			OUTPUT_VARIABLE TMPLIBPATHS
+		)
+		execute_process(
+			COMMAND bash "-c" "find ${LIBPATH}/${arg}/src.build -name \"*.a\" -exec basename {} \; | sed 's/^lib//g' | sed 's/\.a$//g'  | xargs | tr ' ' ';' "
+			OUTPUT_VARIABLE TMPLIBS
+		)
+		message("TMPLIBS:${TMPLIBS}")
+		string(STRIP "${TMPLIBS}" TMPLIBS )
+		set(LIBRARIES ${LIBRARIES};${TMPLIBS})
+		message("TMPLIBPATHS:${TMPLIBPATHS}")
+		string(STRIP "${TMPLIBPATHS}" TMPLIBPATHS )
+		set(LIBRARY_PATHS ${LIBRARY_PATHS};${TMPLIBPATHS})
 	endforeach()
 	set(LIBRARY_PATHS ${LIBRARY_PATHS} PARENT_SCOPE )
-	message(${TealBkColor}${BlackColor}${CMAKE_CURRENT_LIST_DIR}${NormalColor}${GreenColor}${LIBRARY_PATHS}${NormalColor} )
+	set(LIBRARIES ${LIBRARIES} PARENT_SCOPE )
+	message(LIBRPATHS:${TealBkColor}${BlackColor}${CMAKE_CURRENT_LIST_DIR}${NormalColor}${GreenColor}${LIBRARY_PATHS}${NormalColor} )
+	message(LIBRARIES:${BlueBkColor}${GreenColor}${CMAKE_CURRENT_LIST_DIR}${NormalColor}${GreenColor}${LIBRARIES}${NormalColor} )
 endfunction()
 
 function(IncludeLibraries)
