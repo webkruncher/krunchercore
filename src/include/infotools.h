@@ -886,6 +886,14 @@ namespace KruncherTools
 		return ( stat( filename.c_str(), &sb ) == 0 );
 	}
 
+	inline bool DirectoryExists( const string pathname )
+	{
+		struct stat sb;
+		if ( stat( pathname.c_str(), &sb ) != 0 ) return false;
+		return S_ISDIR(sb.st_mode);
+	}
+
+
 	inline size_t FileSize(const string filename)
 	{
 		string pathname("text/");
