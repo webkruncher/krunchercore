@@ -74,6 +74,11 @@ extern unsigned long VERBOSITY;
 namespace KruncherTools
 {
 	using namespace std;
+	inline const unsigned char GetConnectionId()
+	{
+		static unsigned char t( 0 );
+		return (t++);
+	}
 #ifdef UNIX
 	inline const string GetUuid()
 	{
@@ -619,13 +624,23 @@ namespace KruncherTools
 		syslog(LOG_NOTICE, "%s", ssmsg.str().c_str() );
 	}
 
-	inline void Log( const unsigned long verbose, const string& where, const string txt )
+	inline void Log( const unsigned long verbose, const string where, const string txt )
 	{
 		if ( ! ( verbose & VERBOSITY ) ) 
 			if ( VERBOSITY != VERB_EVERYTHING ) return;
 
 		stringstream ssmsg;
-		ssmsg << fence << where << fence << getpid() << fence << pthread_self() << fence << txt << fence;
+		ssmsg << fence <<  where << fence << getpid() << fence << pthread_self() << fence << txt << fence;
+		syslog(LOG_NOTICE, "%s", ssmsg.str().c_str() );
+	}
+
+	inline void Log( const unsigned long verbose, const unsigned char _id, const string txt )
+	{
+		if ( ! ( verbose & VERBOSITY ) ) 
+			if ( VERBOSITY != VERB_EVERYTHING ) return;
+
+		stringstream ssmsg;
+		ssmsg << fence <<  _id << fence << getpid() << fence << pthread_self() << fence << txt << fence;
 		syslog(LOG_NOTICE, "%s", ssmsg.str().c_str() );
 	}
 
