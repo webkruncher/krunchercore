@@ -62,6 +62,7 @@
 #include <termios.h>
 #include <stdio.h>
 
+extern volatile bool TERMINATE;
 
 namespace KruncherTools
 {
