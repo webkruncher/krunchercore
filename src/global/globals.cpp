@@ -28,4 +28,5 @@
 
 
 volatile bool TERMINATE(false);
+unsigned long  VERBOSITY(0);
 

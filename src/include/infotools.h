@@ -63,6 +63,13 @@
 #include <stdio.h>
 
 extern volatile bool TERMINATE;
+extern unsigned long VERBOSITY;
+
+#define VERB_EVERYTHING 	0XFFFFFFFFFFFF
+#define VERB_SIGNALS 		0X1000
+#define VERB_PSOCKETS 		0X100
+#define VERB_SSOCKETS 		0X200
+#define VERB_ASOCKETS 		(VERB_SSOCKETS|VERB_PSOCKETS)
 
 namespace KruncherTools
 {
@@ -595,8 +602,10 @@ namespace KruncherTools
 		}
 		return ret;
 	}
+
 	inline void Log( const string txt )
 	{
+		if ( VERBOSITY != VERB_EVERYTHING ) return;
 		stringstream ssmsg;
 		ssmsg << fence << getpid() << fence << pthread_self() << fence << txt << fence;
 		syslog(LOG_NOTICE, "%s", ssmsg.str().c_str() );
@@ -604,10 +613,22 @@ namespace KruncherTools
 
 	inline void Log( const string& where, const string txt )
 	{
+		if ( VERBOSITY != VERB_EVERYTHING ) return;
 		stringstream ssmsg;
 		ssmsg << fence << where << fence << getpid() << fence << pthread_self() << fence << txt << fence;
 		syslog(LOG_NOTICE, "%s", ssmsg.str().c_str() );
 	}
+
+	inline void Log( const unsigned long verbose, const string& where, const string txt )
+	{
+		if ( ! ( verbose & VERBOSITY ) ) 
+			if ( VERBOSITY != VERB_EVERYTHING ) return;
+
+		stringstream ssmsg;
+		ssmsg << fence << where << fence << getpid() << fence << pthread_self() << fence << txt << fence;
+		syslog(LOG_NOTICE, "%s", ssmsg.str().c_str() );
+	}
+
 
 	inline string forkpipe( const string exe, const string input )
 	{
