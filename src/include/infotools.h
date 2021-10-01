@@ -66,6 +66,7 @@ extern volatile bool TERMINATE;
 extern unsigned long VERBOSITY;
 
 #define VERB_EVERYTHING 	0XFFFFFFFFFFFF
+#define VERB_ALWAYS 		0XFFFFFFFFFFFF
 #define VERB_SIGNALS 		0X1000
 #define VERB_PSOCKETS 		0X100
 #define VERB_SSOCKETS 		0X200
@@ -416,37 +417,6 @@ namespace KruncherTools
 	};
 
 
-	struct Directory : stringvector
-	{
-		Directory( const string& _where ) : where( _where ) {}
-		operator bool ()
-		{
-
-			struct dirent *pDirent( NULL ); 
-			DIR* pDir( opendir (where.c_str() ) );
-			if ( ! pDir ) throw where;
-			pDirent = readdir(pDir);
-			while ((pDirent = readdir(pDir)) != NULL)
-				if ( pDirent->d_type == DT_DIR )
-				{
-					directories.push_back( pDirent->d_name );
-				} else {
-					if ( pDirent->d_type == DT_REG )
-					{
-						push_back( pDirent->d_name );
-					}
-				}
-
-			closedir (pDir);
-
-			throw string("BRIDGE OUT");
-			return true;
-		}
-		const stringvector& Directories() { return directories; }
-		private:
-		const string where;
-		stringvector directories;
-	};
 
 
 
@@ -929,6 +899,55 @@ namespace KruncherTools
 		if ( stat( pathname.c_str(), &sb ) != 0 ) return false;
 		return S_ISDIR(sb.st_mode);
 	}
+
+	struct Directory : stringvector
+	{
+		Directory( const string& _where ) : where( _where ) {}
+		void operator()( const mode_t mode=0777 )
+		{
+			split( where, "/" );
+			if ( empty() ) return;
+			string& start( *begin() );
+			if ( start == "" )  start="/";
+			stringstream sspath;
+			for ( iterator it=begin();it!=end();it++ )
+			{
+				sspath<<*it;
+				if ( sspath.str()!="/" ) sspath<<"/";
+				if ( DirectoryExists( sspath.str() ) ) continue;
+				cerr << "creating " << sspath.str() << endl;
+				mkdir( sspath.str().c_str(), mode );
+				
+			}
+		}
+		operator bool ()
+		{
+
+			struct dirent *pDirent( NULL ); 
+			DIR* pDir( opendir (where.c_str() ) );
+			if ( ! pDir ) throw where;
+			pDirent = readdir(pDir);
+			while ((pDirent = readdir(pDir)) != NULL)
+				if ( pDirent->d_type == DT_DIR )
+				{
+					directories.push_back( pDirent->d_name );
+				} else {
+					if ( pDirent->d_type == DT_REG )
+					{
+						push_back( pDirent->d_name );
+					}
+				}
+
+			closedir (pDir);
+
+			throw string("BRIDGE OUT");
+			return true;
+		}
+		const stringvector& Directories() { return directories; }
+		private:
+		const string where;
+		stringvector directories;
+	};
 
 
 	inline size_t FileSize(const string filename)
