@@ -1019,7 +1019,23 @@ namespace KruncherTools
 		return ss.str();
 	}
 
-	
+	inline bool onebitcheck( const unsigned long bits )
+	{
+		bool sett( false );
+		unsigned long mask( 1 );
+		while ( mask )
+		{
+			const bool s( bits & mask );
+			if ( s )
+			{
+				if ( sett ) return true;
+				sett=true;
+			}
+			mask <<= 1;
+		}
+		return false;
+	}
+		
 
 } // KruncherTools
 
