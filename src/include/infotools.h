@@ -76,11 +76,6 @@ extern unsigned long VERBOSITY;
 namespace KruncherTools
 {
 	using namespace std;
-	inline const unsigned char GetConnectionId()
-	{
-		static unsigned char t( 0 );
-		return (t++);
-	}
 #ifdef UNIX
 	inline const string GetUuid()
 	{
