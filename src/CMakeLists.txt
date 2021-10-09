@@ -10,4 +10,10 @@ IncludeProjects(
 	core/include
 )
 add_subdirectory( global )
+add_subdirectory( ut )
+
+enable_testing()
+add_test(NAME krunchercoreut  COMMAND ../src.build/ui/krunchercoreut  )
+
+
 

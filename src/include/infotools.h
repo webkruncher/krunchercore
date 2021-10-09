@@ -48,7 +48,6 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-#include <dirent.h>
 #include <syslog.h>
 
 #ifdef LINUX
@@ -883,105 +882,6 @@ namespace KruncherTools
 		const pthread_t tid;
 	}; 
 
-	inline bool FileExists( const string filename )
-	{
-		struct stat sb;
-		return ( stat( filename.c_str(), &sb ) == 0 );
-	}
-
-	inline bool DirectoryExists( const string pathname )
-	{
-		struct stat sb;
-		if ( stat( pathname.c_str(), &sb ) != 0 ) return false;
-		return S_ISDIR(sb.st_mode);
-	}
-
-	struct Directory : stringvector
-	{
-		Directory( const string& _where ) : where( _where ) {}
-		void operator()( const mode_t mode=0777 )
-		{
-			split( where, "/" );
-			if ( empty() ) return;
-			string& start( *begin() );
-			if ( start == "" )  start="/";
-			stringstream sspath;
-			for ( iterator it=begin();it!=end();it++ )
-			{
-				sspath<<*it;
-				if ( sspath.str()!="/" ) sspath<<"/";
-				if ( DirectoryExists( sspath.str() ) ) continue;
-				cerr << "creating " << sspath.str() << endl;
-				mkdir( sspath.str().c_str(), mode );
-				
-			}
-		}
-		operator bool ()
-		{
-
-			struct dirent *pDirent( NULL ); 
-			DIR* pDir( opendir (where.c_str() ) );
-			if ( ! pDir ) throw where;
-			pDirent = readdir(pDir);
-			while ((pDirent = readdir(pDir)) != NULL)
-				if ( pDirent->d_type == DT_DIR )
-				{
-					directories.push_back( pDirent->d_name );
-				} else {
-					if ( pDirent->d_type == DT_REG )
-					{
-						push_back( pDirent->d_name );
-					}
-				}
-
-			closedir (pDir);
-
-			throw string("BRIDGE OUT");
-			return true;
-		}
-		const stringvector& Directories() { return directories; }
-		private:
-		const string where;
-		stringvector directories;
-	};
-
-
-	inline size_t FileSize(const string filename)
-	{
-		string pathname("text/");
-		pathname+=filename;
-		struct stat sb;
-		memset(&sb, 0, sizeof(sb));
-		//cout << pathname << "^" << endl;
-		if (stat(pathname.c_str(), &sb)==0) 
-		{
-			//stringstream ssout; ssout << fence << "[fsize]" << fence << pathname << fence << sb.st_size << fence; Log(ssout.str());
-			return sb.st_size;
-		} else {
-			//stringstream ssout; ssout << fence << logerror << "[fsize]" << fence << pathname << fence << sb.st_size << fence; Log(ssout.str());
-			return 0;
-		}
-	}
-
-	inline string LoadFile(const string& filename )
-	{
-		stringstream ss;
-		ifstream in(filename.c_str());
-		string line;
-		if (!in.fail())
-		while (!in.eof()) { getline(in, line); ss << line << endl;}
-		return ss.str();
-		//cout << "\033[32m" << ">" << "\033[0m"; cout.flush();
-	}
-
-	inline void LoadFile(const string& filename, stringstream& ss)
-	{
-		ifstream in(filename.c_str());
-		string line;
-		if (!in.fail())
-		while (!in.eof()) { getline(in, line); ss << line << endl;}
-		//cout << "\033[32m" << ">" << "\033[0m"; cout.flush();
-	}
 
 	inline string getpass()
 	{
