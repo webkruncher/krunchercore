@@ -30,20 +30,38 @@ using namespace KruncherTools;
 #include <directory.h>
 using namespace KruncherDirectory;
 
+#include <regex.h>
+
 namespace DirectoryTester
 {
 	struct Dir : Directory
 	{
-		Dir( const string& _where, const bool _recurse ) : Directory( _where, _recurse ) {}
+		Dir( const string& _where, const bool _recurse, const regex_t _ex ) 
+			: Directory( _where, _recurse ), ex( _ex )
+		{}
+		const Dir& operator = (const Dir& that )
+		{
+			if ( this == &that ) return *this;
+			where=that.where;
+			recurse=that.recurse;
+			ex=that.ex;
+			return *this;
+		}
 		Directory& NewSub( const string _where, const bool _recurse );
 		private:
+		mutable regex_t ex;
+		bool Filter( const dirent& ent ) const 
+		{
+			if ( ent.d_type == DT_DIR ) return false;
+			if ( ent.d_type != DT_REG ) return true;
+			return !!regexec( &ex, ent.d_name, 0, 0, 0 );
+		}
 		vector< Dir > subs;
 		friend ostream& operator<<(ostream&,const Dir&);
 		ostream& operator<<(ostream& o) const
 		{
-			o << "[directories]" << endl << directories ;
-			const stringvector& me( *this );
-			o << "[files]"  << endl << me;
+			for ( const_iterator it=begin();it!=end();it++ )
+				o << where << separator << *it << endl;
 			for ( vector< Dir >::const_iterator sit=subs.begin();sit!=subs.end(); sit++ )
 			{
 				const Dir& sub( *sit );
@@ -57,14 +75,17 @@ namespace DirectoryTester
 
 	inline Directory& Dir::NewSub( const string _where, const bool _recurse )
 	{
-		Dir tmp( _where, recurse );
+		Dir tmp( _where, recurse, ex );
 		subs.push_back( tmp );
 		return subs.back();
 	}
 
 	int Simple( int, char** )
 	{
-		Dir dir( "/home/jmt/Info", true );
+		regex_t rx;
+		const string exp( "^.*\\.js$|^.*\\.xml$" );
+		if ( regcomp( &rx, exp.c_str(), REG_EXTENDED ) ) throw exp;
+		Dir dir( "/home/jmt/websites", true, rx );
 		if ( ! dir ) return -1;
 		cerr << dir ;
 		return 0;

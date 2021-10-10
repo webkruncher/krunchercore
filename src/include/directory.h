@@ -66,9 +66,11 @@ namespace KruncherDirectory
 		mutable string where;
 		bool recurse;
 		stringvector directories;
+		private:
 		virtual Directory& NewSub( const string _where, const bool _recurse ) 
 			{ throw string("No NewSub implemented for Directory" ); return *this;}
-		private:
+		virtual bool Filter( const dirent& ent ) const { return false; }
+		virtual void operator+=( const dirent& );
 		friend ostream& operator<<(ostream&,const Directory&);
 		virtual ostream& operator<<(ostream& o) const
 		{
@@ -81,24 +83,26 @@ namespace KruncherDirectory
 
 	inline ostream& operator<<(ostream& o,const Directory& m) { return m.operator<<(o); }
 
+	inline void Directory::operator+=( const dirent& ent )
+	{
+		if ( Filter( ent ) ) return;
+		if ( ent.d_type == DT_DIR )
+			directories.push_back( ent.d_name );
+		else
+			if ( ent.d_type == DT_REG )
+				push_back( ent.d_name );
+	}
+
 	inline Directory::operator bool ()
 	{
+		Directory& D( *this );
 		struct dirent *pDirent( NULL ); 
 		DIR* pDir( opendir (where.c_str() ) );
 		if ( ! pDir ) throw string("Directory:" ) + where;
 		pDirent = readdir(pDir);
-		while ((pDirent = readdir(pDir)) != NULL)
-			if ( pDirent->d_type == DT_DIR )
-			{
-				directories.push_back( pDirent->d_name );
-			} else {
-				if ( pDirent->d_type == DT_REG )
-				{
-					push_back( pDirent->d_name );
-				}
-			}
-
+		while ((pDirent = readdir(pDir)) != NULL) D+=*pDirent;
 		closedir (pDir);
+
 		for ( stringvector::const_iterator dit=directories.begin();dit!=directories.end();dit++)
 		{
 			const string name( *dit );
@@ -126,15 +130,10 @@ namespace KruncherDirectory
 		pathname+=filename;
 		struct stat sb;
 		memset(&sb, 0, sizeof(sb));
-		//cout << pathname << "^" << endl;
 		if (stat(pathname.c_str(), &sb)==0) 
-		{
-			//stringstream ssout; ssout << fence << "[fsize]" << fence << pathname << fence << sb.st_size << fence; Log(ssout.str());
 			return sb.st_size;
-		} else {
-			//stringstream ssout; ssout << fence << logerror << "[fsize]" << fence << pathname << fence << sb.st_size << fence; Log(ssout.str());
+		else
 			return 0;
-		}
 	}
 
 	inline string LoadFile(const string& filename )
@@ -151,7 +150,6 @@ namespace KruncherDirectory
 			ss << line << endl;
 		}
 		return ss.str();
-		//cout << "\033[32m" << ">" << "\033[0m"; cout.flush();
 	}
 
 	inline void LoadFile(const string& filename, stringstream& ss)
@@ -166,7 +164,6 @@ namespace KruncherDirectory
 			if ( in.fail() ) throw filename;
 			ss << line << endl;
 		}
-		//cout << "\033[32m" << ">" << "\033[0m"; cout.flush();
 	}
 };
 #endif //  KRUNCHER_DIRECTORY_H
