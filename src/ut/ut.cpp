@@ -50,7 +50,7 @@ int main(int argc, char** argv)
 	try
 	{
 		Tests tests;
-		tests[  "Directory.simple" ] = DirectoryTester::Simple( argc, argv );
+		tests[  "Directory.simple" ] = DirectoryTester::FilteredDirectoryListing( "/home/jmt/websites" );
 		return tests();
 	}
 	catch( const exception& e ) { ssexcept<<e.what(); }

@@ -80,12 +80,12 @@ namespace DirectoryTester
 		return subs.back();
 	}
 
-	int Simple( int, char** )
+	int FilteredDirectoryListing( const string path )
 	{
 		regex_t rx;
 		const string exp( "^.*\\.js$|^.*\\.xml$" );
 		if ( regcomp( &rx, exp.c_str(), REG_EXTENDED ) ) throw exp;
-		Dir dir( "/home/jmt/websites", true, rx );
+		Dir dir( path, true, rx );
 		if ( ! dir ) return -1;
 		cerr << dir ;
 		return 0;

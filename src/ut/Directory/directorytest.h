@@ -28,7 +28,7 @@
 
 namespace DirectoryTester
 {
-	int Simple( int, char** );
+	int FilteredDirectoryListing( const string path );
 } // DirectoryTester
  
 
