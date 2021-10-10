@@ -126,11 +126,9 @@ namespace KruncherDirectory
 
 	inline size_t FileSize(const string filename)
 	{
-		string pathname("text/");
-		pathname+=filename;
 		struct stat sb;
 		memset(&sb, 0, sizeof(sb));
-		if (stat(pathname.c_str(), &sb)==0) 
+		if (stat(filename.c_str(), &sb)==0) 
 			return sb.st_size;
 		else
 			return 0;
