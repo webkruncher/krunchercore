@@ -40,9 +40,9 @@ namespace KruncherDirectory
 
 	struct Directory : stringvector
 	{
-		Directory() {}
-		Directory( const string& _where ) : where( _where ) {}
-		void operator=(const string& _where ) const { where=_where; }
+		Directory() : recurse( false ) {}
+		Directory( const string& _where ) : where( _where ), recurse( false ) {}
+		Directory( const string& _where, const bool _recurse ) : where( _where ), recurse( _recurse ) {}
 		void operator()( const mode_t mode=0777 )
 		{
 			split( where, "/" );
@@ -60,31 +60,14 @@ namespace KruncherDirectory
 				
 			}
 		}
-		virtual operator bool ()
-		{
-			struct dirent *pDirent( NULL ); 
-			DIR* pDir( opendir (where.c_str() ) );
-			if ( ! pDir ) throw string("Directory:" ) + where;
-			pDirent = readdir(pDir);
-			while ((pDirent = readdir(pDir)) != NULL)
-				if ( pDirent->d_type == DT_DIR )
-				{
-					directories.push_back( pDirent->d_name );
-				} else {
-					if ( pDirent->d_type == DT_REG )
-					{
-						push_back( pDirent->d_name );
-					}
-				}
-
-			closedir (pDir);
-
-			return true;
-		}
+		virtual operator bool ();
 		const stringvector& Directories() { return directories; }
 		protected:
 		mutable string where;
+		bool recurse;
 		stringvector directories;
+		virtual Directory& NewSub( const string _where, const bool _recurse ) 
+			{ throw string("No NewSub implemented for Directory" ); return *this;}
 		private:
 		friend ostream& operator<<(ostream&,const Directory&);
 		virtual ostream& operator<<(ostream& o) const
@@ -97,6 +80,37 @@ namespace KruncherDirectory
 	}; 
 
 	inline ostream& operator<<(ostream& o,const Directory& m) { return m.operator<<(o); }
+
+	inline Directory::operator bool ()
+	{
+		struct dirent *pDirent( NULL ); 
+		DIR* pDir( opendir (where.c_str() ) );
+		if ( ! pDir ) throw string("Directory:" ) + where;
+		pDirent = readdir(pDir);
+		while ((pDirent = readdir(pDir)) != NULL)
+			if ( pDirent->d_type == DT_DIR )
+			{
+				directories.push_back( pDirent->d_name );
+			} else {
+				if ( pDirent->d_type == DT_REG )
+				{
+					push_back( pDirent->d_name );
+				}
+			}
+
+		closedir (pDir);
+		for ( stringvector::const_iterator dit=directories.begin();dit!=directories.end();dit++)
+		{
+			const string name( *dit );
+			if ( name == "." ) continue;
+			if ( name == ".." ) continue;
+			const string subwhere( where + string( "/" ) + name );
+			Directory& sub( NewSub( subwhere, recurse ) );
+			if ( ! sub ) return false;
+		}
+
+		return true;
+	}
 
 	inline bool FileExists( const string filename )
 	{
@@ -125,21 +139,33 @@ namespace KruncherDirectory
 
 	inline string LoadFile(const string& filename )
 	{
+		if ( ! FileExists( filename ) ) return "";
 		stringstream ss;
 		ifstream in(filename.c_str());
 		string line;
-		if (!in.fail())
-		while (!in.eof()) { getline(in, line); ss << line << endl;}
+		if (in.fail()) return "";
+		while (!in.eof())
+		{
+			getline(in, line);
+			if ( in.fail() ) throw filename;
+			ss << line << endl;
+		}
 		return ss.str();
 		//cout << "\033[32m" << ">" << "\033[0m"; cout.flush();
 	}
 
 	inline void LoadFile(const string& filename, stringstream& ss)
 	{
+		if ( ! FileExists( filename ) ) return ;
 		ifstream in(filename.c_str());
 		string line;
-		if (!in.fail())
-		while (!in.eof()) { getline(in, line); ss << line << endl;}
+		if (in.fail()) return;
+		while (!in.eof()) 
+		{
+			getline(in, line); 
+			if ( in.fail() ) throw filename;
+			ss << line << endl;
+		}
 		//cout << "\033[32m" << ">" << "\033[0m"; cout.flush();
 	}
 };

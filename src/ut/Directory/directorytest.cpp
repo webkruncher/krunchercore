@@ -34,10 +34,10 @@ namespace DirectoryTester
 {
 	struct Dir : Directory
 	{
-		void operator=(const string& _where ) const { Directory::operator=(_where);}
-		operator bool ();
-		vector< Dir > subs;
+		Dir( const string& _where, const bool _recurse ) : Directory( _where, _recurse ) {}
+		Directory& NewSub( const string _where, const bool _recurse );
 		private:
+		vector< Dir > subs;
 		friend ostream& operator<<(ostream&,const Dir&);
 		ostream& operator<<(ostream& o) const
 		{
@@ -55,27 +55,16 @@ namespace DirectoryTester
 
 	inline ostream& operator<<(ostream& o,const Dir& m) { return m.operator<<(o); }
 
-	inline Dir::operator bool ()
+	inline Directory& Dir::NewSub( const string _where, const bool _recurse )
 	{
-		if ( ! Directory::operator bool() ) return false;
-		for ( stringvector::const_iterator dit=directories.begin();dit!=directories.end();dit++)
-		{
-			const string name( *dit );
-			if ( name == "." ) continue;
-			if ( name == ".." ) continue;
-			Dir tmp;
-			subs.push_back( tmp );
-			Dir& sub( subs.back() );
-			sub=where + string( "/" ) + name;
-			if ( ! sub ) return false;
-		}
-		return true;
+		Dir tmp( _where, recurse );
+		subs.push_back( tmp );
+		return subs.back();
 	}
 
 	int Simple( int, char** )
 	{
-		Dir dir;
-		dir="/home/jmt/Info";
+		Dir dir( "/home/jmt/Info", true );
 		if ( ! dir ) return -1;
 		cerr << dir ;
 		return 0;
