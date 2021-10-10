@@ -136,7 +136,7 @@ namespace KruncherDirectory
 			return 0;
 	}
 
-	inline string LoadFile(const string& filename )
+	inline string LoadFile(const string& filename, int maxlines=-1, int maxlinelen=-1 )
 	{
 		if ( ! FileExists( filename ) ) return "";
 		stringstream ss;
@@ -145,14 +145,18 @@ namespace KruncherDirectory
 		if (in.fail()) return "";
 		while (!in.eof())
 		{
-			getline(in, line);
+			if ( maxlines != -1 )
+				if ( !(maxlines--) ) throw string("file too long:" + filename );
+			getline(in, line); 
+			if ( maxlinelen !=-1 )
+				if ( (int) line.size() > maxlinelen ) throw string("Line too long in file:" ) + filename + "->" + line ;
 			if ( in.fail() ) throw filename;
 			ss << line << endl;
 		}
 		return ss.str();
 	}
 
-	inline void LoadFile(const string& filename, stringstream& ss)
+	inline void LoadFile(const string& filename, stringstream& ss, int maxlines=-1, int maxlinelen=-1)
 	{
 		if ( ! FileExists( filename ) ) return ;
 		ifstream in(filename.c_str());
@@ -160,7 +164,11 @@ namespace KruncherDirectory
 		if (in.fail()) return;
 		while (!in.eof()) 
 		{
+			if ( maxlines != -1 )
+				if ( !(maxlines--) ) throw string("file too long:" + filename );
 			getline(in, line); 
+			if ( maxlinelen !=-1 )
+				if ( (int) line.size() > maxlinelen ) throw string("Line too long in file:" ) + filename + "->" + line ;
 			if ( in.fail() ) throw filename;
 			ss << line << endl;
 		}
