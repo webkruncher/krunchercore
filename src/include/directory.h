@@ -138,11 +138,10 @@ namespace KruncherDirectory
 
 	inline string LoadFile(const string& filename, int maxlines=-1, int maxlinelen=-1 )
 	{
-		if ( ! FileExists( filename ) ) return "";
 		stringstream ss;
 		ifstream in(filename.c_str());
 		string line;
-		if (in.fail()) return "";
+		if ( in.fail() ) throw string("Cannot read file:" ) + filename;
 		while (!in.eof())
 		{
 			if ( maxlines != -1 )
@@ -150,7 +149,6 @@ namespace KruncherDirectory
 			getline(in, line); 
 			if ( maxlinelen !=-1 )
 				if ( (int) line.size() > maxlinelen ) throw string("Line too long in file:" ) + filename + "->" + line ;
-			if ( in.fail() ) throw filename;
 			ss << line << endl;
 		}
 		return ss.str();
@@ -158,10 +156,9 @@ namespace KruncherDirectory
 
 	inline void LoadFile(const string& filename, stringstream& ss, int maxlines=-1, int maxlinelen=-1)
 	{
-		if ( ! FileExists( filename ) ) return ;
 		ifstream in(filename.c_str());
 		string line;
-		if (in.fail()) return;
+		if ( in.fail() ) throw string("Cannot read file:" ) + filename;
 		while (!in.eof()) 
 		{
 			if ( maxlines != -1 )
@@ -169,9 +166,15 @@ namespace KruncherDirectory
 			getline(in, line); 
 			if ( maxlinelen !=-1 )
 				if ( (int) line.size() > maxlinelen ) throw string("Line too long in file:" ) + filename + "->" + line ;
-			if ( in.fail() ) throw filename;
 			ss << line << endl;
 		}
+	}
+
+	inline void LoadBinaryFile(const string& filename, unsigned char* dest, size_t len )
+	{
+		ifstream in(filename.c_str());
+		if ( in.fail() ) throw string("Cannot read file:" ) + filename;
+		in.read( (char*) dest, len );
 	}
 };
 #endif //  KRUNCHER_DIRECTORY_H
