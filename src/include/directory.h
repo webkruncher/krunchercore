@@ -187,5 +187,5 @@ namespace KruncherDirectory
 		in.read( (char*) dest, len );
 	}
 };
-#endif //  KRUNCHER_DIRECTORY_H
+#endif // KRUNCHER_DIRECTORY_H
 
