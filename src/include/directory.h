@@ -43,6 +43,18 @@ namespace KruncherDirectory
 		Directory() : recurse( false ) {}
 		Directory( const string& _where ) : where( _where ), recurse( false ) {}
 		Directory( const string& _where, const bool _recurse ) : where( _where ), recurse( _recurse ) {}
+		const Directory& operator = (const Directory& that ) const
+		{
+			if ( this == &that ) return *this;
+			where=that.where;
+			recurse=that.recurse;
+			return *this;
+		}
+		void operator()( const string& _where, const bool _recurse )  const
+		{
+			where=_where;
+			recurse=_recurse;
+		}
 		void operator()( const mode_t mode=0777 )
 		{
 			split( where, "/" );
@@ -64,7 +76,7 @@ namespace KruncherDirectory
 		const stringvector& Directories() { return directories; }
 		protected:
 		mutable string where;
-		bool recurse;
+		mutable bool recurse;
 		stringvector directories;
 		private:
 		virtual Directory& NewSub( const string _where, const bool _recurse ) 
