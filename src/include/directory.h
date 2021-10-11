@@ -31,6 +31,18 @@
 namespace KruncherDirectory
 {
 	using namespace KruncherTools;
+
+	inline string pathseparators( const string a, const string b )
+	{
+		const size_t als( a.rfind( "/" ) );
+		const size_t bls( b.find( "/" ) );
+		if ( ( als != a.size()-1) && ( bls != 0 ) )
+			return a+string("/")+b;
+		if ( ( als == a.size()-1) && ( bls == 0 ) )
+			return a+b.substr(1,b.size()-1);
+		return a+b;
+	}
+
 	inline bool DirectoryExists( const string pathname )
 	{
 		struct stat sb;
@@ -120,7 +132,7 @@ namespace KruncherDirectory
 			const string name( *dit );
 			if ( name == "." ) continue;
 			if ( name == ".." ) continue;
-			const string subwhere( where + string( "/" ) + name );
+			const string subwhere( pathseparators( where, name ) );
 			Directory& sub( NewSub( subwhere, recurse ) );
 			if ( ! sub ) return false;
 		}
@@ -186,6 +198,8 @@ namespace KruncherDirectory
 		if ( in.fail() ) throw string("Cannot read file:" ) + filename;
 		in.read( (char*) dest, len );
 	}
+
+
 };
 #endif // KRUNCHER_DIRECTORY_H
 
