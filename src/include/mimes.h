@@ -39,13 +39,12 @@ namespace KruncherMimes
 		{
 			Chunk() : many( 0 ), where( 0 ) { memset( bytes, 0, chunksize ); } 
 
-			size_t read( SocketType& sock )
+			size_t read( SocketType& sock, const size_t much=chunksize )
 			{
+				const size_t get( min( ( size_t ) chunksize, much ) );
 				const size_t b4( sock.tellg() );
-				sock.read( (char*) bytes, chunksize );
+				sock.read( (char*) bytes, get );
 				many=(size_t)sock.tellg()-b4;
-//cerr << (char*) bytes << endl;
-//cerr << "many:" << many << endl;
 				return many;
 			}
 
@@ -57,7 +56,7 @@ namespace KruncherMimes
 
 			string operator()( const size_t much )
 			{
-				const size_t get( ( much > many ) ? many : much );
+				const size_t get( min( many, much ) );
 				string ret( (const char*) &bytes[ where ], get );
 				where+=get;
 				return ret;
@@ -72,13 +71,10 @@ namespace KruncherMimes
 		struct Matcher
 		{
 			Matcher() : matched( 0 )
-			{
-				memcpy( pattern, "\r\n\r\n", 4 );
-			}
+				{ memcpy( pattern, "\r\n\r\n", 4 ); }
 
 			bool operator()( const unsigned char c )
 			{
-//cerr << "C:" << c << ", matched:" << matched << ", pattern:" << sizeof(pattern) << endl;
 				if ( pattern[ matched ] == c )
 				{
 					matched++;
@@ -103,7 +99,6 @@ namespace KruncherMimes
 				size_t bread( 0 );
 				do
 				{
-//usleep( 1e5 );
 					Chunk< SocketType, chunksize > C; 
 					push_back( C );
 					Chunk< SocketType, chunksize >& chunk( this->back() );
@@ -113,7 +108,6 @@ namespace KruncherMimes
 			}
 			string& Headers()
 			{
-//cerr << "ndx:" << ndx << endl;
 				vector< Chunk< SocketType, chunksize > >& me( *this );
 				size_t len( 0 );
 				while ( len < ndx )
@@ -127,9 +121,20 @@ namespace KruncherMimes
 			}
 			string& Payload( const size_t len )
 			{
-				const size_t bucket( ndx / chunksize );
+				size_t bucket( ndx / chunksize );
 				vector< Chunk< SocketType, chunksize > >& me( *this );
-				payload=me[ bucket ]( len );
+				while ( ndx < len )
+				{
+					Chunk< SocketType, chunksize > C; 
+					push_back( C );
+					Chunk< SocketType, chunksize >& chunk( this->back() );
+					ndx+=chunk.read( sock, len-ndx );
+				} 
+				while ( payload.size() < len )
+				{
+					payload+=me[ bucket ]( len );
+					bucket++;
+				}
 				return payload;
 			}
 			private:
@@ -139,7 +144,6 @@ namespace KruncherMimes
 				const vector< Chunk< SocketType, chunksize > >& me( *this );
 				const size_t offset( where % chunksize );
 				const size_t bucket( where / chunksize );
-//cerr << "chunksize:" << chunksize << ", where:" << where << ", bucket:" << bucket << ", offset:" << offset << endl;
 				return me[ bucket ][ offset ];
 			}
 
@@ -147,16 +151,10 @@ namespace KruncherMimes
 			{
 				for ( size_t j=0;j<bread;j++ )
 				{
-//usleep( 1e5 );
 					const unsigned char C( Next( ndx++ ) );
 					if ( matcher( C ) )
-					{
-						
-//cerr << "EOM" << endl << endl;
 						return true;
-					}
 				}
-//cerr << "NOEOM" << endl << endl;
 				return false;
 			}
 
