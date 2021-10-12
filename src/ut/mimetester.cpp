@@ -25,13 +25,49 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <fstream>
 #include <mimes.h>
-
+using namespace std;
 using namespace KruncherMimes;
+#include <infotools.h>
 
-void MimeTester()
+
+
+template < size_t chunksize >
+	int MimeTest()
 {
-			//SocketReader< PlainInformation::Socket, 512 > Chunker( ss );
+	ifstream in( "../../src/mimetest.txt" );
+	SocketReader< istream, chunksize  > mime( in );
+	if ( ! mime ) return 1;
+	const string& headers( mime.Headers() );
+	KruncherTools::stringvector Headers;
+	Headers.split( headers, "\r\n" );
+	cerr << "Headers:" << endl << Headers << endl;
+	size_t ContentLength( 0 );
+	for ( KruncherTools::stringvector::const_iterator hit=Headers.begin();hit!=Headers.end();hit++)
+	{
+		const string H( *hit );
+		if ( H.find("Content-Length:") == 0 )
+		{ 
+			const size_t coln( H.find( ":" ) );
+			if ( coln == string::npos ) throw H;
+			const string cls( H.substr( coln+1, H.size()-1 ) );
+			char *Ender( NULL );
+			ContentLength=strtol( cls.c_str(), &Ender, 10 );
+		}
+	}
+
+	cerr << "CL:" << ContentLength << endl;	
+	const string& payload( mime.Payload( ContentLength ) );
+	cout << "Payload:" << endl << payload << endl << endl;
+	return 0;
 }
 
 
+int MimeTester()
+{
+	MimeTest< 10 >();
+	MimeTest< 20 >();
+	MimeTest< 1000 >();
+	return 0;
+}

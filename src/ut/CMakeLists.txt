@@ -6,7 +6,7 @@ get_filename_component(INCLUDES_PATH ../include/ REALPATH)
 add_library(
 	krunchercoreutlib
 		STATIC
-			placeholder.cpp
+			mimetester.cpp
 )
 
 add_library( kruncher::krunchercoreutlib ALIAS krunchercoreutlib  )
@@ -71,5 +71,6 @@ target_link_libraries(
 		crypto
 		krunchercore
 		krunchercoredirectorytest
+		krunchercoreutlib
 )
 
