@@ -34,7 +34,7 @@
 namespace KruncherMimes
 {
 		using namespace std;
-		template< typename SocketType, int chunksize >
+		template< typename SocketType, size_t chunksize >
 			struct Chunk
 		{
 			Chunk() : many( 0 ), where( 0 ) { memset( bytes, 0, chunksize ); } 
@@ -90,7 +90,7 @@ namespace KruncherMimes
 		};
 
 
-		template < typename SocketType, int chunksize >
+		template < typename SocketType, size_t chunksize >
 			struct SocketReader : vector< Chunk< SocketType, chunksize > > 
 		{
 			SocketReader( SocketType& _sock ) : sock( _sock ), ndx( 0 ) {}
