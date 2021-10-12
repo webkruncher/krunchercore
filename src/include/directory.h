@@ -200,6 +200,6 @@ namespace KruncherDirectory
 	}
 
 
-};
+} // namespace KruncherDirectory
 #endif // KRUNCHER_DIRECTORY_H
 
