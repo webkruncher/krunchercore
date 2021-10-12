@@ -121,7 +121,7 @@ namespace KruncherMimes
 			}
 			string& Payload( const size_t len )
 			{
-				const size_t L( len - headers.size() );
+				const size_t L( len + headers.size() );
 				size_t bucket( ndx / chunksize );
 				vector< Chunk< SocketType, chunksize > >& me( *this );
 				while ( ndx < L )
@@ -131,9 +131,9 @@ namespace KruncherMimes
 					Chunk< SocketType, chunksize >& chunk( this->back() );
 					ndx+=chunk.read( sock, L-ndx );
 				} 
-				while ( payload.size() < L )
+				while ( payload.size() < len )
 				{
-					payload+=me[ bucket ]( L-payload.size() );
+					payload+=me[ bucket ]( len-payload.size() );
 					bucket++;
 				}
 				return payload;
