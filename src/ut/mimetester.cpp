@@ -37,6 +37,7 @@ template < size_t chunksize >
 	ifstream in( "../../src/mimetest.txt" );
 	SocketReader< istream, chunksize  > mime( in );
 	if ( ! mime ) return 1;
+cerr << "\033[44m\033[32mGettingHeaders\033[0m" << endl;
 	const string& headers( mime.Headers() );
 	KruncherTools::stringvector Headers;
 	Headers.split( headers, "\r\n" );
@@ -55,6 +56,8 @@ template < size_t chunksize >
 			ContentLength=strtol( cls.c_str(), &Ender, 10 );
 		}
 	}
+//ContentLength=40;
+cerr << "\033[44m\033[32mGettingPayload\033[0m" << endl;
 	const string& payload( mime.Payload( ContentLength ) );
 	cout << "Payload:" << endl << payload << endl;
 	return 0;
@@ -63,7 +66,7 @@ template < size_t chunksize >
 
 int MimeTester()
 {
-	cout << "\033[32m"; MimeTest< 6 >();
+	//cout << "\033[32m"; MimeTest< 6 >();
 	cout << "\033[34m"; MimeTest< 128 >();
 	cout << "\033[0m";
 	return 0;
