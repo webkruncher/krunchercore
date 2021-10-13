@@ -91,15 +91,16 @@ namespace KruncherMimes
 	template < typename SocketType, size_t chunksize >
 		struct SocketReader : vector< Chunk< SocketType, chunksize > > 
 	{
+		typedef Chunk< SocketType, chunksize > ChunkType;
 		SocketReader( SocketType& _sock ) : sock( _sock ), ndx( 0 ) {}
 		operator bool ()
 		{
 			size_t bread( 0 );
 			do
 			{
-				Chunk< SocketType, chunksize > C; 
+				ChunkType C;
 				push_back( C );
-				Chunk< SocketType, chunksize >& chunk( this->back() );
+				ChunkType& chunk( this->back() );
 				bread=chunk.read( sock );
 			} while ( ! eomime( bread ) );
 			return true;
@@ -107,7 +108,7 @@ namespace KruncherMimes
 
 		string& Headers()
 		{
-			vector< Chunk< SocketType, chunksize > >& me( *this );
+			vector< ChunkType >& me( *this );
 			size_t len( 0 );
 			while ( len < ndx )
 			{
@@ -123,12 +124,12 @@ namespace KruncherMimes
 		{
 			const size_t L( len + headers.size() );
 			size_t bucket( ndx / chunksize );
-			vector< Chunk< SocketType, chunksize > >& me( *this );
+			vector< ChunkType >& me( *this );
 			while ( ndx < L )
 			{
-				Chunk< SocketType, chunksize > C; 
+				ChunkType C;
 				push_back( C );
-				Chunk< SocketType, chunksize >& chunk( this->back() );
+				ChunkType& chunk( this->back() );
 				ndx+=chunk.read( sock, L-ndx );
 			} 
 			while ( payload.size() < len )
@@ -142,7 +143,7 @@ namespace KruncherMimes
 
 		unsigned char Next( const size_t where )
 		{
-			const vector< Chunk< SocketType, chunksize > >& me( *this );
+			const vector< ChunkType >& me( *this );
 			const size_t offset( where % chunksize );
 			const size_t bucket( where / chunksize );
 			return me[ bucket ][ offset ];

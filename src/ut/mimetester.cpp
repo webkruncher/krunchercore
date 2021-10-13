@@ -31,8 +31,6 @@ using namespace std;
 using namespace KruncherMimes;
 #include <infotools.h>
 
-
-
 template < size_t chunksize >
 	int MimeTest()
 {
@@ -70,3 +68,5 @@ int MimeTester()
 	cout << "\033[0m";
 	return 0;
 }
+
+
