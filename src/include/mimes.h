@@ -42,10 +42,8 @@ namespace KruncherMimes
 		size_t read( SocketType& sock, const size_t much=chunksize )
 		{
 			const size_t get( min( chunksize, much ) );
-			const size_t b4( sock.tellg() );
 			sock.read( (char*) bytes, get );
 			many=sock.gcount();
-//cerr << "\033[33mRead:" << many << "->\033[35m" << bytes << "\033[0m;" << endl;
 			return many;
 		}
 
@@ -54,13 +52,8 @@ namespace KruncherMimes
 
 		string operator()( const size_t much )
 		{
-//cerr << "Has:" << many-where << endl;
 			const size_t get( min( many, much ) );
-
 			string ret( (char*) &bytes[ where ], many-where );
-//cerr << "Got:\033[36m" << ret << "\033[0m;" << endl;;
-
-
 			where+=get;
 			return ret;
 		}
@@ -122,13 +115,14 @@ namespace KruncherMimes
 				headers+=what;
 				len+=what.size();
 			}
+			const size_t eoh( headers.find( "\r\n\r\n" ) );
+			if ( eoh!=string::npos ) 
+				headers.resize( eoh );
 			return headers;
 		}
 
 		string& Payload( const size_t len )
 		{
-			//size_t bucket( this->size() );
-//cerr << "Buckets:" << this->size() << endl;
 			size_t bucket( ndx / chunksize );
 			const size_t L( len + headers.size() );
 			ChunksType& me( *this );
@@ -141,11 +135,9 @@ namespace KruncherMimes
 				ndx+=bread;
 				if ( bread != chunksize ) break;
 			} 
-//cerr << "BucketsNow:" << this->size() << endl;
+
 			while ( payload.size() < len )
 			{
-//cerr << "Adding bucket:" << bucket << endl;
-//cerr << "Need: " << len-payload.size() << endl;
 				payload+=me[ bucket ]( len-payload.size() );
 				bucket++;
 			}
