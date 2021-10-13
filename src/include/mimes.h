@@ -92,6 +92,7 @@ namespace KruncherMimes
 		struct SocketReader : vector< Chunk< SocketType, chunksize > > 
 	{
 		typedef Chunk< SocketType, chunksize > ChunkType;
+		typedef vector< ChunkType > ChunksType;
 		SocketReader( SocketType& _sock ) : sock( _sock ), ndx( 0 ) {}
 		operator bool ()
 		{
@@ -108,7 +109,7 @@ namespace KruncherMimes
 
 		string& Headers()
 		{
-			vector< ChunkType >& me( *this );
+			ChunksType& me( *this );
 			size_t len( 0 );
 			while ( len < ndx )
 			{
@@ -124,7 +125,7 @@ namespace KruncherMimes
 		{
 			const size_t L( len + headers.size() );
 			size_t bucket( ndx / chunksize );
-			vector< ChunkType >& me( *this );
+			ChunksType& me( *this );
 			while ( ndx < L )
 			{
 				ChunkType C;
@@ -143,7 +144,7 @@ namespace KruncherMimes
 
 		unsigned char Next( const size_t where )
 		{
-			const vector< ChunkType >& me( *this );
+			const ChunksType& me( *this );
 			const size_t offset( where % chunksize );
 			const size_t bucket( where / chunksize );
 			return me[ bucket ][ offset ];
