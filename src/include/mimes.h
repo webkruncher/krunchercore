@@ -152,6 +152,7 @@ namespace KruncherMimes
 
 		bool eomime( const size_t bread )
 		{
+			if ( ! bread ) return true;
 			for ( size_t j=0;j<bread;j++ )
 			{
 				const unsigned char C( Next( ndx++ ) );
