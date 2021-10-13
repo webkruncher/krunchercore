@@ -45,7 +45,7 @@ namespace KruncherMimes
 			const size_t b4( sock.tellg() );
 			sock.read( (char*) bytes, get );
 			many=sock.gcount();
-cerr << "\033[33mRead:" << many << "->\033[35m" << bytes << "\033[0m;" << endl;
+//cerr << "\033[33mRead:" << many << "->\033[35m" << bytes << "\033[0m;" << endl;
 			return many;
 		}
 
@@ -54,11 +54,11 @@ cerr << "\033[33mRead:" << many << "->\033[35m" << bytes << "\033[0m;" << endl;
 
 		string operator()( const size_t much )
 		{
-cerr << "Has:" << many-where << endl;
+//cerr << "Has:" << many-where << endl;
 			const size_t get( min( many, much ) );
 
 			string ret( (char*) &bytes[ where ], many-where );
-cerr << "Got:\033[36m" << ret << "\033[0m;" << endl;;
+//cerr << "Got:\033[36m" << ret << "\033[0m;" << endl;;
 
 
 			where+=get;
@@ -128,7 +128,7 @@ cerr << "Got:\033[36m" << ret << "\033[0m;" << endl;;
 		string& Payload( const size_t len )
 		{
 			//size_t bucket( this->size() );
-cerr << "Buckets:" << this->size() << endl;
+//cerr << "Buckets:" << this->size() << endl;
 			size_t bucket( ndx / chunksize );
 			const size_t L( len + headers.size() );
 			ChunksType& me( *this );
@@ -141,11 +141,11 @@ cerr << "Buckets:" << this->size() << endl;
 				ndx+=bread;
 				if ( bread != chunksize ) break;
 			} 
-cerr << "BucketsNow:" << this->size() << endl;
+//cerr << "BucketsNow:" << this->size() << endl;
 			while ( payload.size() < len )
 			{
-cerr << "Adding bucket:" << bucket << endl;
-cerr << "Need: " << len-payload.size() << endl;
+//cerr << "Adding bucket:" << bucket << endl;
+//cerr << "Need: " << len-payload.size() << endl;
 				payload+=me[ bucket ]( len-payload.size() );
 				bucket++;
 			}
