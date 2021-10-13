@@ -33,137 +33,137 @@
 #include <sstream>
 namespace KruncherMimes
 {
-		using namespace std;
-		template< typename SocketType, size_t chunksize >
-			struct Chunk
+	using namespace std;
+	template< typename SocketType, size_t chunksize >
+		struct Chunk
+	{
+		Chunk() : many( 0 ), where( 0 ) { memset( bytes, 0, chunksize ); } 
+
+		size_t read( SocketType& sock, const size_t much=chunksize )
 		{
-			Chunk() : many( 0 ), where( 0 ) { memset( bytes, 0, chunksize ); } 
+			const size_t get( min( chunksize, much ) );
+			sock.read( (char*) bytes, get );
+			many=get;
+			return get;
+		}
 
-			size_t read( SocketType& sock, const size_t much=chunksize )
-			{
-				const size_t get( min( ( size_t ) chunksize, much ) );
-				const size_t b4( sock.tellg() );
-				sock.read( (char*) bytes, get );
-				many=(size_t)sock.tellg()-b4;
-				return many;
-			}
-
-			unsigned char operator[]( const size_t offset ) const
-			{
-				if ( offset > chunksize ) throw string("Bad chunk offset");
-				return bytes[ offset ];
-			}
-
-			string operator()( const size_t much )
-			{
-				const size_t get( min( many, much ) );
-				string ret( (const char*) &bytes[ where ], get );
-				where+=get;
-				return ret;
-			}
-	
-			private:
-			unsigned char bytes[ chunksize ];
-			size_t many;
-			size_t where;
-		};
-
-		struct Matcher
+		unsigned char operator[]( const size_t offset ) const
 		{
-			Matcher() : matched( 0 )
-				{ memcpy( pattern, "\r\n\r\n", 4 ); }
+			if ( offset > chunksize ) throw string("Bad chunk offset");
+			return bytes[ offset ];
+		}
 
-			bool operator()( const unsigned char c )
-			{
-				if ( pattern[ matched ] == c )
-				{
-					matched++;
-					if ( matched == sizeof( pattern ) ) return true;
-				} else {
-					matched=0;
-				}
-				return false;
-			}
-			private:
-			size_t matched;
-			unsigned char pattern[ 4 ];
-		};
-
-
-		template < typename SocketType, size_t chunksize >
-			struct SocketReader : vector< Chunk< SocketType, chunksize > > 
+		string operator()( const size_t much )
 		{
-			SocketReader( SocketType& _sock ) : sock( _sock ), ndx( 0 ) {}
-			operator bool ()
-			{
-				size_t bread( 0 );
-				do
-				{
-					Chunk< SocketType, chunksize > C; 
-					push_back( C );
-					Chunk< SocketType, chunksize >& chunk( this->back() );
-					bread=chunk.read( sock );
-				} while ( ! eomime( bread ) );
-				return true;
-			}
-			string& Headers()
-			{
-				vector< Chunk< SocketType, chunksize > >& me( *this );
-				size_t len( 0 );
-				while ( len < ndx )
-				{
-					const size_t bucket( len / chunksize );
-					const string what( me[ bucket ]( ndx - len ) );
-					headers+=what;
-					len+=what.size();
-				}
-				return headers;
-			}
-			string& Payload( const size_t len )
-			{
-				const size_t L( len + headers.size() );
-				size_t bucket( ndx / chunksize );
-				vector< Chunk< SocketType, chunksize > >& me( *this );
-				while ( ndx < L )
-				{
-					Chunk< SocketType, chunksize > C; 
-					push_back( C );
-					Chunk< SocketType, chunksize >& chunk( this->back() );
-					ndx+=chunk.read( sock, L-ndx );
-				} 
-				while ( payload.size() < len )
-				{
-					payload+=me[ bucket ]( len-payload.size() );
-					bucket++;
-				}
-				return payload;
-			}
-			private:
+			const size_t get( min( many, much ) );
+			string ret( (char*) &bytes[ where ], get );
+			where+=get;
+			return ret;
+		}
 
-			unsigned char Next( const size_t where )
-			{
-				const vector< Chunk< SocketType, chunksize > >& me( *this );
-				const size_t offset( where % chunksize );
-				const size_t bucket( where / chunksize );
-				return me[ bucket ][ offset ];
-			}
+		private:
+		unsigned char bytes[ chunksize ];
+		size_t many;
+		size_t where;
+	};
 
-			bool eomime( const size_t bread )
-			{
-				for ( size_t j=0;j<bread;j++ )
-				{
-					const unsigned char C( Next( ndx++ ) );
-					if ( matcher( C ) )
-						return true;
-				}
-				return false;
-			}
+	struct Matcher
+	{
+		Matcher() : matched( 0 )
+			{ memcpy( pattern, "\r\n\r\n", 4 ); }
 
-			string headers, payload;
-			SocketType& sock;
-			Matcher matcher;
-			size_t ndx;
-		};
+		bool operator()( const unsigned char c )
+		{
+			if ( pattern[ matched ] == c )
+			{
+				matched++;
+				if ( matched == sizeof( pattern ) ) return true;
+			} else {
+				matched=0;
+			}
+			return false;
+		}
+		private:
+		size_t matched;
+		unsigned char pattern[ 4 ];
+	};
+
+	template < typename SocketType, size_t chunksize >
+		struct SocketReader : vector< Chunk< SocketType, chunksize > > 
+	{
+		SocketReader( SocketType& _sock ) : sock( _sock ), ndx( 0 ) {}
+		operator bool ()
+		{
+			size_t bread( 0 );
+			do
+			{
+				Chunk< SocketType, chunksize > C; 
+				push_back( C );
+				Chunk< SocketType, chunksize >& chunk( this->back() );
+				bread=chunk.read( sock );
+			} while ( ! eomime( bread ) );
+			return true;
+		}
+
+		string& Headers()
+		{
+			vector< Chunk< SocketType, chunksize > >& me( *this );
+			size_t len( 0 );
+			while ( len < ndx )
+			{
+				const size_t bucket( len / chunksize );
+				const string what( me[ bucket ]( ndx - len ) );
+				headers+=what;
+				len+=what.size();
+			}
+			return headers;
+		}
+
+		string& Payload( const size_t len )
+		{
+			const size_t L( len + headers.size() );
+			size_t bucket( ndx / chunksize );
+			vector< Chunk< SocketType, chunksize > >& me( *this );
+			while ( ndx < L )
+			{
+				Chunk< SocketType, chunksize > C; 
+				push_back( C );
+				Chunk< SocketType, chunksize >& chunk( this->back() );
+				ndx+=chunk.read( sock, L-ndx );
+			} 
+			while ( payload.size() < len )
+			{
+				payload+=me[ bucket ]( len-payload.size() );
+				bucket++;
+			}
+			return payload;
+		}
+		private:
+
+		unsigned char Next( const size_t where )
+		{
+			const vector< Chunk< SocketType, chunksize > >& me( *this );
+			const size_t offset( where % chunksize );
+			const size_t bucket( where / chunksize );
+			return me[ bucket ][ offset ];
+		}
+
+		bool eomime( const size_t bread )
+		{
+			for ( size_t j=0;j<bread;j++ )
+			{
+				const unsigned char C( Next( ndx++ ) );
+				if ( matcher( C ) )
+					return true;
+			}
+			return false;
+		}
+
+		string headers, payload;
+		SocketType& sock;
+		Matcher matcher;
+		size_t ndx;
+	};
 } // namespace KruncherMimes
 #endif // KRUNCHER_MIME_READER_H
 

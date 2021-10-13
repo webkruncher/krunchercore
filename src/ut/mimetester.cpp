@@ -43,6 +43,7 @@ template < size_t chunksize >
 	KruncherTools::stringvector Headers;
 	Headers.split( headers, "\r\n" );
 	cerr << "Headers:" << endl << Headers;
+
 	size_t ContentLength( 0 );
 	for ( KruncherTools::stringvector::const_iterator hit=Headers.begin();hit!=Headers.end();hit++)
 	{
@@ -56,7 +57,6 @@ template < size_t chunksize >
 			ContentLength=strtol( cls.c_str(), &Ender, 10 );
 		}
 	}
-
 	const string& payload( mime.Payload( ContentLength ) );
 	cout << "Payload:" << endl << payload << endl;
 	return 0;
@@ -66,8 +66,7 @@ template < size_t chunksize >
 int MimeTester()
 {
 	cout << "\033[32m"; MimeTest< 6 >();
-	cout << "\033[33m"; MimeTest< 32 >();
-	cout << "\033[34m"; MimeTest< 48 >();
+	cout << "\033[34m"; MimeTest< 128 >();
 	cout << "\033[0m";
 	return 0;
 }

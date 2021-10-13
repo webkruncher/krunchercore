@@ -1,4 +1,8 @@
 HTTP/1.1 200 OK
-Content-Length:4495
+Content-Type: text/html
+Server: InfoSite
+Connection: close
+Request:/go
+Content-Length:40
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+sudo sh /home/work/scripts/RamDisk.bash
