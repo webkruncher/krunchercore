@@ -90,7 +90,7 @@ namespace KruncherMimes
 	{
 		typedef Chunk< SocketType, chunksize > ChunkType;
 		typedef vector< ChunkType > ChunksType;
-		SocketReader( SocketType& _sock ) : sock( _sock ), ndx( 0 ) {}
+		SocketReader( SocketType& _sock ) : sock( _sock ), ndx( 0 ), HeaderReadLength( 0 ) {}
 		operator bool ()
 		{
 			size_t bread( 0 );
@@ -116,6 +116,7 @@ namespace KruncherMimes
 				len+=what.size();
 			}
 			const size_t eoh( headers.find( "\r\n\r\n" ) );
+			HeaderReadLength=headers.size();
 			if ( eoh!=string::npos ) 
 				headers.resize( eoh );
 			return headers;
@@ -124,7 +125,7 @@ namespace KruncherMimes
 		string& Payload( const size_t len )
 		{
 			size_t bucket( ndx / chunksize );
-			const size_t L( len + headers.size() );
+			const size_t L( len + HeaderReadLength );
 			ChunksType& me( *this );
 			while ( ndx < L )
 			{
@@ -136,11 +137,7 @@ namespace KruncherMimes
 				if ( bread != chunksize ) break;
 			} 
 
-			while ( payload.size() < len )
-			{
-				payload+=me[ bucket ]( len-payload.size() );
-				bucket++;
-			}
+			while ( payload.size() < len ) payload+=me[ bucket++ ]( len-payload.size() );
 			return payload;
 		}
 		private:
@@ -168,6 +165,7 @@ namespace KruncherMimes
 		SocketType& sock;
 		Matcher matcher;
 		size_t ndx;
+		size_t HeaderReadLength;
 	};
 } // namespace KruncherMimes
 #endif // KRUNCHER_MIME_READER_H

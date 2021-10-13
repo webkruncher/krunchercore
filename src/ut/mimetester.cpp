@@ -63,8 +63,14 @@ template < size_t chunksize >
 
 int MimeTester()
 {
+	cout << "\033[31m"; MimeTest< 116 >();
+#if 0
+	cout << "\033[31m"; MimeTest< 116 >();
 	cout << "\033[32m"; MimeTest< 12 >();
 	cout << "\033[34m"; MimeTest< 8192 >();
+	cout << "\033[35m"; MimeTest< 4495 >();
+	cout << "\033[36m"; MimeTest< 4608 >();
+#endif
 	cout << "\033[0m";
 	return 0;
 }
