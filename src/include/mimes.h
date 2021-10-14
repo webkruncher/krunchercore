@@ -31,10 +31,12 @@
 #include <fstream>
 #include <vector>
 #include <sstream>
+#include <infotools.h>
 namespace KruncherMimes
 {
 	using namespace std;
-	typedef basic_string< unsigned char> binarystring;
+	using namespace KruncherTools;
+
 	template< typename SocketType, size_t chunksize >
 		struct Chunk
 	{
@@ -115,6 +117,8 @@ namespace KruncherMimes
 			{
 				const size_t bucket( len / chunksize );
 				const binarystring what( me[ bucket ]( ndx - len ) );
+				if ( ! what.istext() ) { headers.clear(); return headers; }
+				
 				headers+=(char*)what.data();
 				len+=what.size();
 			}

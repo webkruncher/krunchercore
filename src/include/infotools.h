@@ -932,6 +932,28 @@ namespace KruncherTools
 	}
 		
 
+	struct binarystring : basic_string< unsigned char> 
+	{
+		binarystring(){}
+		binarystring( const binarystring& that ) : basic_string< unsigned char>( that ) {}
+		binarystring( const unsigned char* that ) : basic_string< unsigned char>( that ) {}
+		binarystring( const unsigned char* that, const size_t len ) : basic_string< unsigned char>( that, len ) {}
+		bool istext() const
+		{
+			const basic_string< unsigned char>& me( *this );
+			for ( size_t i=0; i < size(); i++ )
+			{
+				const unsigned char c( me[ i ] );
+				if ( c == ' ' ) continue;
+				if ( c == '\t' ) continue;
+				if ( c == '\r' ) continue;
+				if ( c == '\n' ) continue;
+				if ( isalnum( c ) ) continue;
+				if ( ispunct( c ) ) continue;
+			}
+			return true;
+		}
+	};
 } // KruncherTools
 
 
