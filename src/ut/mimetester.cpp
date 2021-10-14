@@ -32,15 +32,16 @@ using namespace KruncherMimes;
 #include <infotools.h>
 
 template < size_t chunksize >
-	int MimeTest( const string txt )
+	int MimeTest( const string txt, const bool expectation )
 {
-	ifstream in( txt.c_str() );
+	const string path( string("../../src/" ) + txt );
+	ifstream in( path.c_str() );
 	SocketReader< istream, chunksize  > mime( in );
 	if ( ! mime ) return 1;
 	const string& headers( mime.Headers() );
 	KruncherTools::stringvector Headers;
 	Headers.split( headers, "\r\n" );
-	cerr << "Headers:" << endl << Headers;
+	//cerr << "Headers:" << endl << Headers;
 
 	size_t ContentLength( 0 );
 	for ( KruncherTools::stringvector::const_iterator hit=Headers.begin();hit!=Headers.end();hit++)
@@ -56,27 +57,39 @@ template < size_t chunksize >
 		}
 	}
 	const basic_string<unsigned char>& payload( mime.Payload( ContentLength ) );
-	cout << "Payload:" << endl << (char*)payload.data() << endl;
-	return 0;
+	int result( 0 );
+	if ( ! expectation )
+		result=( ContentLength != payload.size() );
+	else
+		result=( ContentLength == payload.size() );
+	
+	if ( result ) cout << green; else cout << red; 
+	cout << setw( 24 ) << txt << fence << setw( 6 ) << chunksize << fence << setw( 6 ) << ContentLength << fence << setw( 6 ) << payload.size() << normal << endl;
+	return result;
+	//cout << "Payload:" << endl << (char*)payload.data() << endl;
 }
 
 
 int MimeTester()
 {
-	KruncherTools::stringvector testfiles;
-	testfiles.push_back( "../../src/badmime.txt" );
-	testfiles.push_back( "../../src/mimetest.txt" );
-	testfiles.push_back( "../../src/badbinaryheaders.txt" );
-	for ( KruncherTools::stringvector::const_iterator it=testfiles.begin();it!=testfiles.end();it++)
+	int status( 0 );
+	map< string, bool > testfiles;
+	testfiles[ "badmime.txt" ] = false;
+	testfiles[ "mimetest.txt" ] = true;
+	testfiles[ "badbinaryheaders.txt" ] = true;
+	testfiles[ "binarypayload.txt" ] = true;
+	for ( map< string, bool >::const_iterator it=testfiles.begin();it!=testfiles.end();it++)
 	{
-		const string& txt( *it );
-		cout << "\033[31m"; MimeTest< 116 >( txt ); cout << "\033[0m\n.\n";
-		cout << "\033[32m"; MimeTest< 12 >( txt ); cout << "\033[0m\n.\n";
-		cout << "\033[34m"; MimeTest< 8192 >( txt ); cout << "\033[0m\n.\n";
-		cout << "\033[35m"; MimeTest< 4495 >( txt ); cout << "\033[0m\n.\n";
-		cout << "\033[36m"; MimeTest< 4608 >( txt ); cout << "\033[0m\n.\n";
+		const string txt( it->first );
+		const bool expectation( it->second );
+		status|=MimeTest< 116 >( txt, expectation );
+		status|=MimeTest< 12 >( txt, expectation );
+		status|=MimeTest< 8192 >( txt, expectation );
+		status|=MimeTest< 4495 >( txt, expectation );
+		status|=MimeTest< 4608 >( txt, expectation );
 	}
-	return 0;
+	if ( status ) return 0; else return 1;
+	return status;
 }
 
 

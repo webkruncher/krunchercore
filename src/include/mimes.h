@@ -113,16 +113,22 @@ namespace KruncherMimes
 		{
 			ChunksType& me( *this );
 			size_t len( 0 );
-			while ( len < ndx )
+			while ( len < ndx ) 
 			{
 				const size_t bucket( len / chunksize );
 				const binarystring what( me[ bucket ]( ndx - len ) );
-				if ( ! what.istext() ) { headers.clear(); return headers; }
-				headers+=(char*)what.data();
-				len+=what.size();
+				const pair<bool, size_t > nontext( what.nontext() );
+				if ( nontext.first )
+				{
+					headers.append( (char*) what.data(), nontext.second ); break; 
+					len+=nontext.second;
+				} else {
+					headers+=(char*)what.data();
+					len+=what.size();
+				}
 			}
-			const size_t eoh( headers.find( "\r\n\r\n" ) );
 			HeaderReadLength=headers.size();
+			const size_t eoh( headers.find( "\r\n\r\n" ) );
 			if ( eoh!=string::npos ) 
 				headers.resize( eoh );
 			return headers;

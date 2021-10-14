@@ -938,8 +938,9 @@ namespace KruncherTools
 		binarystring( const binarystring& that ) : basic_string< unsigned char>( that ) {}
 		binarystring( const unsigned char* that ) : basic_string< unsigned char>( that ) {}
 		binarystring( const unsigned char* that, const size_t len ) : basic_string< unsigned char>( that, len ) {}
-		bool istext() const
+		pair< bool, size_t > nontext() const
 		{
+			//return pair< bool, size_t >( false, 0 );
 			const basic_string< unsigned char>& me( *this );
 			for ( size_t i=0; i < size(); i++ )
 			{
@@ -950,9 +951,9 @@ namespace KruncherTools
 				if ( c == '\n' ) continue;
 				if ( isalnum( c ) ) continue;
 				if ( ispunct( c ) ) continue;
-				return false;
+				return pair< bool, size_t >( true, i );
 			}
-			return true;
+			return pair< bool, size_t >( false, 0 );
 		}
 	};
 
