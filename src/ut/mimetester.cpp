@@ -70,7 +70,6 @@ int MimeTester()
 	for ( KruncherTools::stringvector::const_iterator it=testfiles.begin();it!=testfiles.end();it++)
 	{
 		const string& txt( *it );
-		cout << "\033[33m"; MimeTest< 8192 >( txt ); cout << "\033[0m\n.\n";
 		cout << "\033[31m"; MimeTest< 116 >( txt ); cout << "\033[0m\n.\n";
 		cout << "\033[32m"; MimeTest< 12 >( txt ); cout << "\033[0m\n.\n";
 		cout << "\033[34m"; MimeTest< 8192 >( txt ); cout << "\033[0m\n.\n";
