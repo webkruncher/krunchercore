@@ -66,6 +66,7 @@ int MimeTester()
 	KruncherTools::stringvector testfiles;
 	testfiles.push_back( "../../src/badmime.txt" );
 	testfiles.push_back( "../../src/mimetest.txt" );
+	testfiles.push_back( "../../src/badbinaryheaders.txt" );
 	for ( KruncherTools::stringvector::const_iterator it=testfiles.begin();it!=testfiles.end();it++)
 	{
 		const string& txt( *it );
