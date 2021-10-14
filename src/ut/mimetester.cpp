@@ -66,7 +66,6 @@ template < size_t chunksize >
 	if ( result ) cout << green; else cout << red; 
 	cout << setw( 24 ) << txt << fence << setw( 6 ) << chunksize << fence << setw( 6 ) << ContentLength << fence << setw( 6 ) << payload.size() << normal << endl;
 	return result;
-	//cout << "Payload:" << endl << (char*)payload.data() << endl;
 }
 
 
@@ -89,7 +88,6 @@ int MimeTester()
 		status|=MimeTest< 4608 >( txt, expectation );
 	}
 	if ( status ) return 0; else return 1;
-	return status;
 }
 
 
