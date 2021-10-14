@@ -950,10 +950,12 @@ namespace KruncherTools
 				if ( c == '\n' ) continue;
 				if ( isalnum( c ) ) continue;
 				if ( ispunct( c ) ) continue;
+				return false;
 			}
 			return true;
 		}
 	};
+
 } // KruncherTools
 
 
