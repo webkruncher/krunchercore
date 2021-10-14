@@ -34,6 +34,7 @@
 namespace KruncherMimes
 {
 	using namespace std;
+	typedef basic_string< unsigned char> binarystring;
 	template< typename SocketType, size_t chunksize >
 		struct Chunk
 	{
@@ -50,10 +51,10 @@ namespace KruncherMimes
 		unsigned char operator[]( const size_t offset ) const
 			{ return bytes[ offset ]; }
 
-		basic_string< unsigned char> operator()( const size_t much )
+		binarystring operator()( const size_t much )
 		{
 			got=min( many, much );
-			basic_string< unsigned char> ret( (unsigned char*) &bytes[ where ], many-where );
+			binarystring ret( (unsigned char*) &bytes[ where ], many-where );
 			where+=got;
 			return ret;
 		}
@@ -113,7 +114,7 @@ namespace KruncherMimes
 			while ( len < ndx )
 			{
 				const size_t bucket( len / chunksize );
-				const basic_string< unsigned char > what( me[ bucket ]( ndx - len ) );
+				const binarystring what( me[ bucket ]( ndx - len ) );
 				headers+=(char*)what.data();
 				len+=what.size();
 			}
@@ -124,7 +125,7 @@ namespace KruncherMimes
 			return headers;
 		}
 
-		basic_string<unsigned char>& Payload( const size_t len )
+		binarystring Payload( const size_t len )
 		{
 			size_t bucket( ndx / chunksize );
 			const size_t L( len + HeaderReadLength );
@@ -142,7 +143,7 @@ namespace KruncherMimes
 			while ( payload.size() < len ) 
 			{
 				ChunkType& chunk( me[ bucket++ ] );
-				const basic_string<unsigned char> bytes( chunk( len-payload.size() ) );
+				const binarystring bytes( chunk( len-payload.size() ) );
 				if ( bytes.empty() ) return payload;
 				payload.append( bytes.data(), chunk.Got() );
 			}
@@ -171,7 +172,7 @@ namespace KruncherMimes
 		}
 
 		string headers;
-		basic_string< unsigned char>  payload;
+		binarystring  payload;
 		SocketType& sock;
 		Matcher matcher;
 		size_t ndx;
