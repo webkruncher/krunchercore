@@ -55,24 +55,27 @@ template < size_t chunksize >
 			ContentLength=strtol( cls.c_str(), &Ender, 10 );
 		}
 	}
-	const string& payload( mime.Payload( ContentLength ) );
-	cout << "Payload:" << endl << payload << endl;
+	const basic_string<unsigned char>& payload( mime.Payload( ContentLength ) );
+	cout << "Payload:" << endl << (char*)payload.data() << endl;
 	return 0;
 }
 
 
 int MimeTester()
 {
-	const string txt( "../../src/badmime.txt" );
-	//const string txt( "../../src/mimetest.txt" );
-	cout << "\033[33m"; MimeTest< 8192 >( txt ); cout << "\033[0m\n.\n";
-	cout << "\033[31m"; MimeTest< 116 >( txt ); cout << "\033[0m\n.\n";
-	cout << "\033[32m"; MimeTest< 12 >( txt ); cout << "\033[0m\n.\n";
-	//cout << "\033[34m"; MimeTest< 8192 >( txt ); cout << "\033[0m\n.\n";
-	//cout << "\033[35m"; MimeTest< 4495 >( txt ); cout << "\033[0m\n.\n";
-	//cout << "\033[36m"; MimeTest< 4608 >( txt ); cout << "\033[0m\n.\n";
-
-	cout << "\033[0m";
+	KruncherTools::stringvector testfiles;
+	testfiles.push_back( "../../src/badmime.txt" );
+	testfiles.push_back( "../../src/mimetest.txt" );
+	for ( KruncherTools::stringvector::const_iterator it=testfiles.begin();it!=testfiles.end();it++)
+	{
+		const string& txt( *it );
+		cout << "\033[33m"; MimeTest< 8192 >( txt ); cout << "\033[0m\n.\n";
+		cout << "\033[31m"; MimeTest< 116 >( txt ); cout << "\033[0m\n.\n";
+		cout << "\033[32m"; MimeTest< 12 >( txt ); cout << "\033[0m\n.\n";
+		cout << "\033[34m"; MimeTest< 8192 >( txt ); cout << "\033[0m\n.\n";
+		cout << "\033[35m"; MimeTest< 4495 >( txt ); cout << "\033[0m\n.\n";
+		cout << "\033[36m"; MimeTest< 4608 >( txt ); cout << "\033[0m\n.\n";
+	}
 	return 0;
 }
 

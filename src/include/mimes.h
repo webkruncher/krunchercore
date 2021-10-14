@@ -37,7 +37,7 @@ namespace KruncherMimes
 	template< typename SocketType, size_t chunksize >
 		struct Chunk
 	{
-		Chunk() : many( 0 ), where( 0 ) { memset( bytes, 0, chunksize ); } 
+		Chunk() : many( 0 ), where( 0 ), got( 0 ) { memset( bytes, 0, chunksize ); } 
 
 		size_t read( SocketType& sock, const size_t much=chunksize )
 		{
@@ -50,18 +50,20 @@ namespace KruncherMimes
 		unsigned char operator[]( const size_t offset ) const
 			{ return bytes[ offset ]; }
 
-		string operator()( const size_t much )
+		basic_string< unsigned char> operator()( const size_t much )
 		{
-			const size_t get( min( many, much ) );
-			string ret( (char*) &bytes[ where ], many-where );
-			where+=get;
+			got=min( many, much );
+			basic_string< unsigned char> ret( (unsigned char*) &bytes[ where ], many-where );
+			where+=got;
 			return ret;
 		}
 
+		const size_t Got() const { return got; }
 		private:
 		unsigned char bytes[ chunksize ];
 		size_t many;
 		size_t where;
+		size_t got;
 	};
 
 	struct Matcher
@@ -111,8 +113,8 @@ namespace KruncherMimes
 			while ( len < ndx )
 			{
 				const size_t bucket( len / chunksize );
-				const string what( me[ bucket ]( ndx - len ) );
-				headers+=what;
+				const basic_string< unsigned char > what( me[ bucket ]( ndx - len ) );
+				headers+=(char*)what.data();
 				len+=what.size();
 			}
 			const size_t eoh( headers.find( "\r\n\r\n" ) );
@@ -122,7 +124,7 @@ namespace KruncherMimes
 			return headers;
 		}
 
-		string& Payload( const size_t len )
+		basic_string<unsigned char>& Payload( const size_t len )
 		{
 			size_t bucket( ndx / chunksize );
 			const size_t L( len + HeaderReadLength );
@@ -140,9 +142,9 @@ namespace KruncherMimes
 			while ( payload.size() < len ) 
 			{
 				ChunkType& chunk( me[ bucket++ ] );
-				const string bytes( chunk( len-payload.size() ) );
+				const basic_string<unsigned char> bytes( chunk( len-payload.size() ) );
 				if ( bytes.empty() ) return payload;
-				payload+=bytes;
+				payload.append( bytes.data(), chunk.Got() );
 			}
 			return payload;
 		}
@@ -168,7 +170,8 @@ namespace KruncherMimes
 			return false;
 		}
 
-		string headers, payload;
+		string headers;
+		basic_string< unsigned char>  payload;
 		SocketType& sock;
 		Matcher matcher;
 		size_t ndx;
