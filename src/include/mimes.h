@@ -137,7 +137,13 @@ namespace KruncherMimes
 				if ( bread != chunksize ) break;
 			} 
 
-			while ( payload.size() < len ) payload+=me[ bucket++ ]( len-payload.size() );
+			while ( payload.size() < len ) 
+			{
+				ChunkType& chunk( me[ bucket++ ] );
+				const string bytes( chunk( len-payload.size() ) );
+				if ( bytes.empty() ) return payload;
+				payload+=bytes;
+			}
 			return payload;
 		}
 		private:

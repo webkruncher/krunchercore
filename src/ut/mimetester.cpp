@@ -32,9 +32,9 @@ using namespace KruncherMimes;
 #include <infotools.h>
 
 template < size_t chunksize >
-	int MimeTest()
+	int MimeTest( const string txt )
 {
-	ifstream in( "../../src/mimetest.txt" );
+	ifstream in( txt.c_str() );
 	SocketReader< istream, chunksize  > mime( in );
 	if ( ! mime ) return 1;
 	const string& headers( mime.Headers() );
@@ -63,12 +63,14 @@ template < size_t chunksize >
 
 int MimeTester()
 {
-
-	cout << "\033[31m"; MimeTest< 116 >();
-	cout << "\033[32m"; MimeTest< 12 >();
-	cout << "\033[34m"; MimeTest< 8192 >();
-	cout << "\033[35m"; MimeTest< 4495 >();
-	cout << "\033[36m"; MimeTest< 4608 >();
+	const string txt( "../../src/badmime.txt" );
+	//const string txt( "../../src/mimetest.txt" );
+	cout << "\033[33m"; MimeTest< 8192 >( txt ); cout << "\033[0m\n.\n";
+	cout << "\033[31m"; MimeTest< 116 >( txt ); cout << "\033[0m\n.\n";
+	cout << "\033[32m"; MimeTest< 12 >( txt ); cout << "\033[0m\n.\n";
+	//cout << "\033[34m"; MimeTest< 8192 >( txt ); cout << "\033[0m\n.\n";
+	//cout << "\033[35m"; MimeTest< 4495 >( txt ); cout << "\033[0m\n.\n";
+	//cout << "\033[36m"; MimeTest< 4608 >( txt ); cout << "\033[0m\n.\n";
 
 	cout << "\033[0m";
 	return 0;
