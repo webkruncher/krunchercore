@@ -68,6 +68,13 @@ namespace KruncherMimes
 			return ret;
 		}
 
+		void operator()( binarystring& s, const size_t much )
+		{
+			got=min( many, much );
+			s.append( &bytes[ where ], got );
+			where+=got;
+		}
+
 		const size_t Got() const { return got; }
 		private:
 		unsigned char bytes[ chunksize ];
@@ -165,9 +172,13 @@ namespace KruncherMimes
 			while ( payload.size() < len ) 
 			{
 				ChunkType& chunk( me[ bucket++ ] );
+#if 0
 				const binarystring bytes( chunk( len-payload.size() ) );
 				if ( bytes.empty() ) return payload;
 				payload.append( bytes.data(), chunk.Got() );
+#else
+				chunk( payload, len-payload.size() );
+#endif
 			}
 			return payload;
 		}

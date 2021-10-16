@@ -101,7 +101,7 @@ template < size_t chunksize >
 }
 
 
-int MimeTester()
+int FullMimeTester()
 {
 	int status( 0 );
 	map< string, bool > testfiles;
@@ -118,6 +118,21 @@ int MimeTester()
 		status|=MimeTest< 8192 >( txt, expectation );
 		status|=MimeTest< 4495 >( txt, expectation );
 		status|=MimeTest< 4608 >( txt, expectation );
+	}
+	if ( status ) return 0; else return 1;
+}
+
+
+int MimeTester()
+{
+	int status( 0 );
+	map< string, bool > testfiles;
+	testfiles[ "go.txt" ] = true;
+	for ( map< string, bool >::const_iterator it=testfiles.begin();it!=testfiles.end();it++)
+	{
+		const string txt( it->first );
+		const bool expectation( it->second );
+		status|=MimeTest< 12 >( txt, expectation );
 	}
 	if ( status ) return 0; else return 1;
 }

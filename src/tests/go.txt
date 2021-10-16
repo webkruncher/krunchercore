@@ -1,0 +1,8 @@
+HTTP/1.1 200 OK
+Content-Type: text/html
+Server: InfoSite
+Connection: close
+Request:/go
+Content-Length:40
+
+sudo sh /home/work/scripts/RamDisk.bash
