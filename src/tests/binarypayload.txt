@@ -1,0 +1,144 @@
+HTTP/1.1 200 OK
+Content-Type: text/html
+Server: InfoSite
+Connection: close
+Request:/
+Content-Length:4495
+
+!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--LoadIncludes-->
+<meta name="description" content="This site is dedicated to the betterment of technology.  Tools and utilities found here are designed to conform with international standards.  ">
+<meta name="keywords" content="Software, C++, STL, Programming, Engineer, International Standards, WebKruncher">
+
+<div id="EntryMsg"></div>
+<div style="display:none;" id="pingtarget" ></div>
+
+
+
+		<link rel="stylesheet" href="ajax/webkruncher.css" type="text/css" />
+		<link rel="shortcut icon" href="favicon.ico" />
+
+		<title>Information Kruncher</title>
+		
+		<script type="text/javascript" src="ajax/Tools.js" ></script>
+		<script type="text/javascript" src="ajax/ajax.js" ></script>
+
+		<script type="text/javascript" src="ajax/Breadcrumbs.js" ></script>
+		<script type="text/javascript" src="ajax/Bugger.js" ></script>
+		<script type="text/javascript" src="ajax/Animator.js" ></script>
+		<script type="text/javascript" src="ajax/Motivator.js" ></script>
+		<script type="text/javascript" src="ajax/mousetrails.js" ></script>
+		<script type="text/javascript" src="ajax/MenuCore.js" ></script>
+		<script type="text/javascript" src="ajax/Menu.js" ></script>
+		<script type="text/javascript" src="ajax/Everything.js" ></script>
+		<script type="text/javascript" src="ajax/Texture.js" ></script>
+		<script type="text/javascript" src="ajax/Lemming.js" ></script>
+		<script type="text/javascript" src="ajax/Mood.js" ></script>
+		<script type="text/javascript" src="ajax/Collisions.js" ></script>
+		<script type="text/javascript" src="ajax/Particle.js" ></script>
+		<script type="text/javascript" src="ajax/Plotter.js" ></script>
+		<script type="text/javascript" src="ajax/actionpost.js" ></script>
+		
+		<script type="text/javascript" src="ajax/Menu.WebKruncher.js" ></script>
+		<script type="text/javascript" src="ajax/WinMover.js" ></script>
+		<script type="text/javascript" src="ajax/PageMessenger.js" ></script>
+<body>	
+	<head>
+   <div id="Bread" style="position:relative; top:00px; left:0px;" >
+		   <a id="BreadLink" />
+   </div>
+
+	</head>
+		<div id="WebKruncherLogo" />
+		<div id="MenuRoot" />
+		<div id="SpareRoot" />
+	<div>
+		<div id="RootNode" style="display:inline;" />
+		<div id="LastDitch" 
+			style="position:absolute; top:300px; left:400px; color:red;"
+		/>
+	</div>
+	<div id="InvalidWebBrowser" 
+		style="display:none;background:white;color:black;width:100%;height:100%;padding:30px;border:outset;"
+	>
+		<div style="width:50%">
+		Invalid user agent
+		<br /><br />
+		Try one of these
+		<br /><br />
+		<div style="margin:20px; padding:20px; border:outset;width:50%">
+			<li style="color:blue">FireFox</li>
+			<li style="color:blue">Chrome</li>
+			<li style="color:blue">Opera</li>
+			<li style="color:blue">Safari</li>
+			<li style="color:blue">Chromium</li>
+		</div>
+		</div>
+
+	</div>
+	<div id="PreInitDiagnosticsDiv"  > <div ></div><table class="Entry" /> </div>
+	<div id="WelcomeDiv" >
+		<center>
+			<div id="DefaultWelcome" class="Entry" style="display:block;">
+				<p id="DefaultWelcomeMessage" >
+					JavaScript is required to enter this website
+				</p>
+
+			</div>
+		</center>
+	</div>
+	<div id="Footer"><div>
+</body>
+
+<script language="JavaScript" >
+
+function nocomment()
+{
+	alert("comentless")
+}
+
+function SubStandard()
+{
+	o=GetObject("WelcomeDiv")
+	o.setAttribute("style","display:none;")
+	o=GetObject("DefaultWelcome")
+	o.setAttribute("style","display:none;");
+	def=GetObject("DefaultWelcomeMessage")
+	def.setAttribute("style","display:none;")
+	explain=GetObject("InvalidWebBrowser")
+	style=explain.getAttribute("style","display:inline;");
+	style=style+"display:block";
+	explain.setAttribute("style",style);
+	o=document.body
+	o.setAttribute("style","background:white");
+}
+
+function Loader()
+{
+	substandard=false
+	try{new ActiveXObject("Msxml.DOMDocument");substandard=true;}catch(e){};
+	try{new ActiveXObject("Msxml2.DOMDocument");substandard=true;}catch(e){};
+	try{new ActiveXObject("Msxml2.XMLHTTP");substandard=true;}catch(e){};
+	try{new ActiveXObject("Microsoft.XMLHTTP");substandard=true;}catch(e){}
+
+	if (substandard) 
+	{
+		SubStandard(); 
+		return;
+	}
+
+	o=GetObject("DefaultWelcome")
+	o.style.display="none"
+	o=GetObject("WelcomeDiv")
+	o.style.display="none"
+	BackFlip()
+}
+function FlipLoader()
+{
+	GetObject( "DefaultWelcomeMessage" ).innerHTML="Loading content..."
+	setTimeout("Loader()",1000)
+	CrumbNav=GetObject("Bread").Crumbs=new Breadcrumbs(GetObject("BreadLink"))
+}
+window.onload=FlipLoader
+</script>
+

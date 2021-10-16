@@ -68,7 +68,7 @@ TestResult Consume( SocketManager& sock )
 template < size_t chunksize >
 	int MimeTest( const string fname, const bool expectation )
 {
-	const string path( string("../../src/" ) + fname );
+	const string path( string("../../src/tests/" ) + fname );
 	ifstream in( path.c_str() );
 	SocketReader< istream, chunksize  > sock( in );
 	TestResult t( Consume( sock ) );
@@ -80,14 +80,18 @@ template < size_t chunksize >
 
 
 	bool Same( true );
-		{
-			const size_t fsize( KruncherDirectory::FileSize( path ) );
-			unsigned char* data( (unsigned char*) malloc( fsize ) );
-			if ( ! data ) throw path;
-			KruncherDirectory::LoadBinaryFile( path , data, fsize );
-			if ( memcmp( data, t.payload.data(), fsize ) ) Same=false;
-			free( data );
-		}
+	{
+		const size_t fsize( KruncherDirectory::FileSize( path ) );
+		unsigned char* data( (unsigned char*) malloc( fsize ) );
+		if ( ! data ) throw path;
+		KruncherDirectory::LoadBinaryFile( path , data, fsize );
+		if ( memcmp( data, t.payload.data(), fsize ) ) Same=false;
+		stringstream ssname;
+		ssname << path << "." << chunksize;
+		ofstream o( ssname.str().c_str() );
+		o.write( (char*) t.payload.data(), t.ContentLength );
+		free( data );
+	}
 
 	
 	if ( result && Same ) cout << green; else cout << red; 

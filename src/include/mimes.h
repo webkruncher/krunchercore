@@ -63,7 +63,7 @@ namespace KruncherMimes
 		binarystring operator()( const size_t much )
 		{
 			got=min( many, much );
-			binarystring ret( (unsigned char*) &bytes[ where ], many-where );
+			binarystring ret( (unsigned char*) &bytes[ where ], got );
 			where+=got;
 			return ret;
 		}
