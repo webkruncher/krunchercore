@@ -45,7 +45,6 @@ TestResult Consume( SocketManager& sock )
 	const string& headers( sock.Headers() );
 	KruncherTools::stringvector Headers;
 	Headers.split( headers, "\r\n" );
-	//cerr << "Headers:" << endl << Headers;
 
 	size_t ContentLength( 0 );
 	for ( KruncherTools::stringvector::const_iterator hit=Headers.begin();hit!=Headers.end();hit++)
@@ -61,18 +60,6 @@ TestResult Consume( SocketManager& sock )
 		}
 	}
 	const binarystring& payload( sock.Payload( ContentLength ) );
-	
-#if 0
-	int result( 0 );
-	if ( ! expectation )
-		result=( ContentLength != payload.size() );
-	else
-		result=( ContentLength == payload.size() );
-	
-	if ( result ) cout << green; else cout << red; 
-	cout << setw( 24 ) << fname << fence << setw( 6 ) << chunksize << fence << setw( 6 ) << ContentLength << fence << setw( 6 ) << payload.size() << normal << endl;
-	return result;
-#endif
 	TestResult result( ContentLength, payload ) ;
 	return result;
 }
