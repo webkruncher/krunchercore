@@ -30,6 +30,7 @@
 using namespace std;
 using namespace KruncherMimes;
 #include <infotools.h>
+#include <directory.h>
 
 struct TestResult
 {
@@ -76,8 +77,20 @@ template < size_t chunksize >
 		result=( t.ContentLength != t.payload.size() );
 	else
 		result=( t.ContentLength == t.payload.size() );
+
+
+	bool Same( true );
+		{
+			const size_t fsize( KruncherDirectory::FileSize( path ) );
+			unsigned char* data( (unsigned char*) malloc( fsize ) );
+			if ( ! data ) throw path;
+			KruncherDirectory::LoadBinaryFile( path , data, fsize );
+			if ( memcmp( data, t.payload.data(), fsize ) ) Same=false;
+			free( data );
+		}
+
 	
-	if ( result ) cout << green; else cout << red; 
+	if ( result && Same ) cout << green; else cout << red; 
 	cout << setw( 24 ) << fname << fence << setw( 6 ) << chunksize << fence << setw( 6 ) << t.ContentLength << fence << setw( 6 ) << t.payload.size() << normal << endl;
 	return result;	
 }
