@@ -94,7 +94,8 @@ template < size_t chunksize >
 	}
 
 	
-	if ( result && Same ) cout << green; else cout << red; 
+	if ( result ) cout << green; else cout << red; 
+	if ( ! Same ) cout << bold << blue << redbk;
 	cout << setw( 24 ) << fname << fence << setw( 6 ) << chunksize << fence << setw( 6 ) << t.ContentLength << fence << setw( 6 ) << t.payload.size() << normal << endl;
 	return result;	
 }
