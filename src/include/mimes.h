@@ -40,7 +40,7 @@ namespace KruncherMimes
 	struct SocketManager
 	{
 		virtual string& Headers() = 0;
-		virtual binarystring Payload( const size_t len ) = 0;
+		virtual const binarystring& Payload( const size_t len ) = 0;
 		virtual operator bool () = 0;
 	};
 
@@ -139,11 +139,15 @@ namespace KruncherMimes
 			HeaderReadLength=headers.size();
 			const size_t eoh( headers.find( "\r\n\r\n" ) );
 			if ( eoh!=string::npos ) 
-				headers.resize( eoh );
+			{
+				headers.resize( eoh + 1 );
+				headers[ eoh ] = 0;
+			} else headers.clear();
+			
 			return headers;
 		}
 
-		binarystring Payload( const size_t len )
+		const binarystring& Payload( const size_t len )
 		{
 			size_t bucket( ndx / chunksize );
 			const size_t L( len + HeaderReadLength );
