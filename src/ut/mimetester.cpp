@@ -31,14 +31,18 @@ using namespace std;
 using namespace KruncherMimes;
 #include <infotools.h>
 
-template < size_t chunksize >
-	int MimeTest( const string txt, const bool expectation )
+struct TestResult
 {
-	const string path( string("../../src/" ) + txt );
-	ifstream in( path.c_str() );
-	SocketReader< istream, chunksize  > mime( in );
-	if ( ! mime ) return 1;
-	const string& headers( mime.Headers() );
+	TestResult( const size_t _ContentLength, const binarystring _payload )
+		: ContentLength( _ContentLength ), payload( _payload ) {}
+	size_t ContentLength;
+	const binarystring payload;
+};
+
+TestResult Consume( SocketManager& sock )
+{
+	if ( ! sock ) throw string("Cannot read mime");
+	const string& headers( sock.Headers() );
 	KruncherTools::stringvector Headers;
 	Headers.split( headers, "\r\n" );
 	//cerr << "Headers:" << endl << Headers;
@@ -56,7 +60,9 @@ template < size_t chunksize >
 			ContentLength=strtol( cls.c_str(), &Ender, 10 );
 		}
 	}
-	const basic_string<unsigned char>& payload( mime.Payload( ContentLength ) );
+	const binarystring& payload( sock.Payload( ContentLength ) );
+	
+#if 0
 	int result( 0 );
 	if ( ! expectation )
 		result=( ContentLength != payload.size() );
@@ -64,8 +70,29 @@ template < size_t chunksize >
 		result=( ContentLength == payload.size() );
 	
 	if ( result ) cout << green; else cout << red; 
-	cout << setw( 24 ) << txt << fence << setw( 6 ) << chunksize << fence << setw( 6 ) << ContentLength << fence << setw( 6 ) << payload.size() << normal << endl;
+	cout << setw( 24 ) << fname << fence << setw( 6 ) << chunksize << fence << setw( 6 ) << ContentLength << fence << setw( 6 ) << payload.size() << normal << endl;
 	return result;
+#endif
+	TestResult result( ContentLength, payload ) ;
+	return result;
+}
+
+template < size_t chunksize >
+	int MimeTest( const string fname, const bool expectation )
+{
+	const string path( string("../../src/" ) + fname );
+	ifstream in( path.c_str() );
+	SocketReader< istream, chunksize  > sock( in );
+	TestResult t( Consume( sock ) );
+	int result( 0 );
+	if ( ! expectation )
+		result=( t.ContentLength != t.payload.size() );
+	else
+		result=( t.ContentLength == t.payload.size() );
+	
+	if ( result ) cout << green; else cout << red; 
+	cout << setw( 24 ) << fname << fence << setw( 6 ) << chunksize << fence << setw( 6 ) << t.ContentLength << fence << setw( 6 ) << t.payload.size() << normal << endl;
+	return 0;	
 }
 
 

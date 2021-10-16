@@ -37,6 +37,13 @@ namespace KruncherMimes
 	using namespace std;
 	using namespace KruncherTools;
 
+	struct SocketManager
+	{
+		virtual string& Headers() = 0;
+		virtual binarystring Payload( const size_t len ) = 0;
+		virtual operator bool () = 0;
+	};
+
 	template< typename SocketType, size_t chunksize >
 		struct Chunk
 	{
@@ -91,7 +98,9 @@ namespace KruncherMimes
 	};
 
 	template < typename SocketType, size_t chunksize >
-		struct SocketReader : vector< Chunk< SocketType, chunksize > > 
+		struct SocketReader 
+			: vector< Chunk< SocketType, chunksize > > ,
+				SocketManager
 	{
 		typedef Chunk< SocketType, chunksize > ChunkType;
 		typedef vector< ChunkType > ChunksType;
