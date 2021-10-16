@@ -34,10 +34,25 @@ using namespace KruncherMimes;
 
 struct TestResult
 {
-	TestResult( const size_t _ContentLength, const binarystring _payload )
-		: ContentLength( _ContentLength ), payload( _payload ) {}
+	TestResult( const string _headers, const size_t _ContentLength, const binarystring _payload )
+		: headers( _headers ), ContentLength( _ContentLength ), payload( _payload ) {}
+	const string headers;
 	size_t ContentLength;
 	const binarystring payload;
+
+	const string GetRequestName()
+	{
+		stringvector sv;
+		sv.split( headers, "\r\r" );
+		for ( stringvector::iterator it=sv.begin();it!=sv.end();it++)
+		{
+			const string& s( *it );
+			const size_t r( s.find("Request:") );
+				if ( r!=string::npos )
+					return s.substr( r, s.size()-r );
+		}
+		return "";
+	}
 };
 
 TestResult Consume( SocketManager& sock )
@@ -61,7 +76,7 @@ TestResult Consume( SocketManager& sock )
 		}
 	}
 	const binarystring& payload( sock.Payload( ContentLength ) );
-	TestResult result( ContentLength, payload ) ;
+	TestResult result( headers, ContentLength, payload ) ;
 	return result;
 }
 
@@ -78,19 +93,32 @@ template < size_t chunksize >
 	else
 		result=( t.ContentLength == t.payload.size() );
 
+	
+		stringstream sshname;
+		sshname << path << ".hdr." << chunksize;
+		ofstream o( sshname.str().c_str() );
+		o.write( (char*) t.headers.c_str(), t.headers.size() );
+	const string RequestName( t.GetRequestName( ) ); 
 
 	bool Same( true );
 	{
-		const size_t fsize( KruncherDirectory::FileSize( path ) );
-		unsigned char* data( (unsigned char*) malloc( fsize ) );
-		if ( ! data ) throw path;
-		KruncherDirectory::LoadBinaryFile( path , data, fsize );
-		if ( memcmp( data, t.payload.data(), fsize ) ) Same=false;
-		stringstream ssname;
-		ssname << path << "." << chunksize;
-		ofstream o( ssname.str().c_str() );
-		o.write( (char*) t.payload.data(), t.ContentLength );
-		free( data );
+		stringstream compname;
+		compname<<"/home/jmt/websites/text/jackmthompson.ninja/" << RequestName;
+		if ( KruncherDirectory::FileExists( compname.str().c_str() ) )
+		{
+			const size_t fsize( KruncherDirectory::FileSize( compname.str().c_str() ) );
+			unsigned char* data( (unsigned char*) malloc( fsize ) );
+			if ( ! data ) throw path;
+			KruncherDirectory::LoadBinaryFile( compname.str().c_str() , data, fsize );
+
+			if ( memcmp( data, t.payload.data(), t.ContentLength ) ) Same=false;
+			stringstream ssname;
+			ssname << path << "." << chunksize;
+			ofstream o( ssname.str().c_str() );
+			//cout << compname.str() << " " << ssname.str() << endl;
+			o.write( (char*) t.payload.data(), t.ContentLength );
+			free( data );
+		}
 	}
 
 	
@@ -100,9 +128,23 @@ template < size_t chunksize >
 	return result;	
 }
 
-
-int FullMimeTester()
+int ShortMimeTester()
 {
+	int status( 0 );
+	map< string, bool > testfiles;
+	testfiles[ "go.txt" ] = true;
+	for ( map< string, bool >::const_iterator it=testfiles.begin();it!=testfiles.end();it++)
+	{
+		const string txt( it->first );
+		const bool expectation( it->second );
+		status|=MimeTest< 12 >( txt, expectation );
+	}
+	if ( status ) return 0; else return 1;
+}
+
+int MimeTester()
+{
+	//return ShortMimeTester();
 	int status( 0 );
 	map< string, bool > testfiles;
 	testfiles[ "badmime.txt" ] = false;
@@ -123,18 +165,5 @@ int FullMimeTester()
 }
 
 
-int MimeTester()
-{
-	int status( 0 );
-	map< string, bool > testfiles;
-	testfiles[ "go.txt" ] = true;
-	for ( map< string, bool >::const_iterator it=testfiles.begin();it!=testfiles.end();it++)
-	{
-		const string txt( it->first );
-		const bool expectation( it->second );
-		status|=MimeTest< 12 >( txt, expectation );
-	}
-	if ( status ) return 0; else return 1;
-}
 
 

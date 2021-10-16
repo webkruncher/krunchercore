@@ -44,8 +44,16 @@ namespace KruncherMimes
 		virtual operator bool () = 0;
 	};
 
+	struct ChunkBase
+	{
+		private:
+		friend ostream& operator<<( ostream&, const ChunkBase&); 
+		virtual ostream& operator<<( ostream&) const = 0;
+	};
+	inline ostream& operator<<( ostream& o, const ChunkBase& c ) { return c.operator<<(o);}
+
 	template< typename SocketType, size_t chunksize >
-		struct Chunk
+		struct Chunk : ChunkBase
 	{
 		Chunk() : many( 0 ), where( 0 ), got( 0 ) { memset( bytes, 0, chunksize ); } 
 
@@ -76,7 +84,17 @@ namespace KruncherMimes
 		}
 
 		const size_t Got() const { return got; }
+
+		void operator >> (binarystring& payload )
+		{
+			payload.append( &bytes[ 0 ], many );
+		}
 		private:
+		ostream& operator<<( ostream& o ) const
+		{
+			o.write( (char*) &bytes[ 0 ], many );
+			return o;
+		}
 		unsigned char bytes[ chunksize ];
 		size_t many;
 		size_t where;
@@ -147,7 +165,7 @@ namespace KruncherMimes
 			const size_t eoh( headers.find( "\r\n\r\n" ) );
 			if ( eoh!=string::npos ) 
 			{
-				headers.resize( eoh + 1 );
+				headers.resize( eoh  );
 				headers[ eoh ] = 0;
 			} else headers.clear();
 			
@@ -156,9 +174,7 @@ namespace KruncherMimes
 
 		const binarystring& Payload( const size_t len )
 		{
-			size_t bucket( ndx / chunksize );
 			const size_t L( len + HeaderReadLength );
-			ChunksType& me( *this );
 			while ( ndx < L )
 			{
 				ChunkType C;
@@ -169,17 +185,13 @@ namespace KruncherMimes
 				if ( bread != chunksize ) break;
 			} 
 
-			while ( payload.size() < len ) 
+			for ( typename ChunksType::iterator cit=ChunksType::begin(); cit!=this->end(); cit++ )
 			{
-				ChunkType& chunk( me[ bucket++ ] );
-#if 0
-				const binarystring bytes( chunk( len-payload.size() ) );
-				if ( bytes.empty() ) return payload;
-				payload.append( bytes.data(), chunk.Got() );
-#else
-				chunk( payload, len-payload.size() );
-#endif
+				ChunkType& ch( *cit );
+				ch >> payload;
 			}
+
+			payload.erase(0, headers.size() +strlen( "\r\n\r\n" ) );
 			return payload;
 		}
 		private:
