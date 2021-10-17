@@ -31,7 +31,15 @@ using namespace std;
 using namespace KruncherMimes;
 #include <infotools.h>
 #include <directory.h>
-#if 0
+
+
+struct IoFile : ifstream, ofstream
+{
+	IoFile( const string in, const string out )
+		: ifstream( in.c_str() ), ofstream( out.c_str() ) {}
+};
+
+#if 1
 struct TestResult
 {
 	TestResult( const string _headers, const size_t _ContentLength, const binarystring _payload )
@@ -83,9 +91,10 @@ TestResult Consume( SocketManager& sock )
 template < size_t chunksize >
 	int MimeTest( const string fname, const bool expectation )
 {
-	const string path( string("../../src/tests/" ) + fname );
-	ifstream in( path.c_str() );
-	SocketReadWriter< istream, chunksize  > sock( in );
+	const string ipath( string("../../src/tests/" ) + fname );
+	const string opath( string("../../src/tests/" ) + fname + string("out") );
+	IoFile io( ipath.c_str(), opath.c_str()  );
+	SocketReadWriter< IoFile, chunksize  > sock( io );
 	TestResult t( Consume( sock ) );
 	int result( 0 );
 	if ( ! expectation )
@@ -95,9 +104,9 @@ template < size_t chunksize >
 
 	
 		stringstream sshname;
-		sshname << path << ".hdr." << chunksize;
-		ofstream o( sshname.str().c_str() );
-		o.write( (char*) t.headers.c_str(), t.headers.size() );
+		sshname << ipath << ".hdr." << chunksize;
+		//ofstream o( sshname.str().c_str() );
+		//o.write( (char*) t.headers.c_str(), t.headers.size() );
 	const string RequestName( t.GetRequestName( ) ); 
 
 	bool Same( true );
@@ -108,15 +117,15 @@ template < size_t chunksize >
 		{
 			const size_t fsize( KruncherDirectory::FileSize( compname.str().c_str() ) );
 			unsigned char* data( (unsigned char*) malloc( fsize ) );
-			if ( ! data ) throw path;
+			if ( ! data ) throw ipath;
 			KruncherDirectory::LoadBinaryFile( compname.str().c_str() , data, fsize );
 
 			if ( memcmp( data, t.payload.data(), t.ContentLength ) ) Same=false;
 			stringstream ssname;
-			ssname << path << "." << chunksize;
-			ofstream o( ssname.str().c_str() );
+			ssname << opath << "." << chunksize;
+			//ofstream o( ssname.str().c_str() );
 			//cout << compname.str() << " " << ssname.str() << endl;
-			o.write( (char*) t.payload.data(), t.ContentLength );
+			io.write( (char*) t.payload.data(), t.ContentLength );
 			free( data );
 		}
 	}
@@ -164,7 +173,15 @@ int MimeTester()
 	if ( status ) return 0; else return 1;
 }
 #else
-int MimeTester(){return 0;}
+
+
+int MimeTester()
+{
+	const string ipath( string("../../src/tests/" ) + "go.txt" );
+	const string opath( string("../../src/tests/" ) + "nogo.txt" );
+	IoFile iof( ipath, opath );
+	return 0;
+}
 
 #endif
 
