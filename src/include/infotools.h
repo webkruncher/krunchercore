@@ -591,8 +591,13 @@ namespace KruncherTools
 
 	inline void Log( const unsigned long verbose, const string where, const string txt )
 	{
-		if ( ! ( verbose & VERBOSITY ) ) 
-			if ( VERBOSITY != VERB_EVERYTHING ) return;
+		bool Send( false );
+
+		if ( verbose & VERBOSITY )  Send=true;
+		if ( VERBOSITY == VERB_EVERYTHING ) Send=true;
+		if ( verbose == VERB_ALWAYS ) Send=true;
+
+		if ( ! Send ) return;
 
 		stringstream ssmsg;
 		ssmsg << fence <<  where << fence << getpid() << fence << pthread_self() << fence << txt << fence;
