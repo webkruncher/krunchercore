@@ -125,13 +125,13 @@ namespace KruncherMimes
 	};
 
 	template < typename SocketType, size_t chunksize >
-		struct SocketReader 
+		struct SocketReadWriter 
 			: vector< Chunk< SocketType, chunksize > > ,
 				SocketManager
 	{
 		typedef Chunk< SocketType, chunksize > ChunkType;
 		typedef vector< ChunkType > ChunksType;
-		SocketReader( SocketType& _sock ) : sock( _sock ), ndx( 0 ), HeaderReadLength( 0 ) {}
+		SocketReadWriter( SocketType& _sock ) : sock( _sock ), ndx( 0 ), HeaderReadLength( 0 ) {}
 		void flush() { sock.flush(); }
 		void write( const unsigned char* data, size_t datalen)
 			{ sock.write( (char*) data, datalen ); }
