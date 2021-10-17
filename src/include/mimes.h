@@ -132,8 +132,8 @@ namespace KruncherMimes
 		typedef Chunk< SocketType, chunksize > ChunkType;
 		typedef vector< ChunkType > ChunksType;
 		SocketReadWriter( SocketType& _sock ) : sock( _sock ), ndx( 0 ), HeaderReadLength( 0 ) {}
-		void flush() { sock.flush(); }
-		void write( const unsigned char* data, size_t datalen)
+		virtual void flush() { sock.flush(); }
+		virtual void write( const unsigned char* data, size_t datalen)
 			{ sock.write( (char*) data, datalen ); }
 		operator bool ()
 		{

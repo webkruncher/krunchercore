@@ -33,13 +33,22 @@ using namespace KruncherMimes;
 #include <directory.h>
 
 
-struct IoFile : ifstream, ofstream
+struct IoFile : ifstream 
 {
 	IoFile( const string in, const string out )
-		: ifstream( in.c_str() ), ofstream( out.c_str() ) {}
+		: ifstream( in.c_str(), std::ifstream::in ), o( out.c_str() ) 
+	{}
+	virtual void flush(){ o.flush(); }
+	virtual size_t write( char* dest, const size_t size )
+	{
+		o.write( dest, size );
+		return size;
+	}
+	private:
+	ofstream o;
 };
 
-#if 1
+
 struct TestResult
 {
 	TestResult( const string _headers, const size_t _ContentLength, const binarystring _payload )
@@ -103,10 +112,6 @@ template < size_t chunksize >
 		result=( t.ContentLength == t.payload.size() );
 
 	
-		stringstream sshname;
-		sshname << ipath << ".hdr." << chunksize;
-		//ofstream o( sshname.str().c_str() );
-		//o.write( (char*) t.headers.c_str(), t.headers.size() );
 	const string RequestName( t.GetRequestName( ) ); 
 
 	bool Same( true );
@@ -172,17 +177,3 @@ int MimeTester()
 	}
 	if ( status ) return 0; else return 1;
 }
-#else
-
-
-int MimeTester()
-{
-	const string ipath( string("../../src/tests/" ) + "go.txt" );
-	const string opath( string("../../src/tests/" ) + "nogo.txt" );
-	IoFile iof( ipath, opath );
-	return 0;
-}
-
-#endif
-
-
