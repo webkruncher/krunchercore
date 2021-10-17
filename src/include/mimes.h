@@ -42,6 +42,8 @@ namespace KruncherMimes
 		virtual string& Headers() = 0;
 		virtual const binarystring& Payload( const size_t len ) = 0;
 		virtual operator bool () = 0;
+		virtual void flush() = 0;
+		virtual void write( const unsigned char*, size_t ) = 0;
 	};
 
 	struct ChunkBase
@@ -130,6 +132,9 @@ namespace KruncherMimes
 		typedef Chunk< SocketType, chunksize > ChunkType;
 		typedef vector< ChunkType > ChunksType;
 		SocketReader( SocketType& _sock ) : sock( _sock ), ndx( 0 ), HeaderReadLength( 0 ) {}
+		void flush() { sock.flush(); }
+		void write( const unsigned char* data, size_t datalen)
+			{ sock.write( (char*) data, datalen ); }
 		operator bool ()
 		{
 			size_t bread( 0 );
