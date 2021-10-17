@@ -37,7 +37,7 @@ namespace KruncherMimes
 	using namespace std;
 	using namespace KruncherTools;
 
-	struct SocketManager
+	struct SocketManager 
 	{
 		virtual string& Headers() = 0;
 		virtual const binarystring& Payload( const size_t len ) = 0;
