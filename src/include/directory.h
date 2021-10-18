@@ -197,6 +197,7 @@ namespace KruncherDirectory
 		ifstream in(filename.c_str());
 		if ( in.fail() ) throw string("Cannot read file:" ) + filename;
 		in.read( (char*) dest, len );
+		if ( in.fail() ) throw string("Cannot read file:" ) + filename;
 	}
 
 
