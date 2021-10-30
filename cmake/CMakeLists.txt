@@ -4,11 +4,18 @@ include(${CMAKE_CURRENT_LIST_DIR}/CMakeUtilities.txt)
 
 set(CMAKE_CXX_FLAGS " -pthread " )
 add_compile_options(-ggdb)
-set(CMAKE_CXX_COMPILER "g++")
+#set(CMAKE_CXX_COMPILER "g++")
+#set(CMAKE_CXX_COMPILER "clang++")
 
 
 IF(CMAKE_SYSTEM_NAME STREQUAL OpenBSD)
-	add_definitions( -DUNIX -Wall )
+	#add_definitions( -DUNIX -Wall )
+	#add_definitions( -DUNIX )
+
+	set(CMAKE_CXX_STANDARD 11)
+	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+	set(CMAKE_CXX_EXTENSIONS OFF)
+
 ENDIF()
 
 IF(CMAKE_SYSTEM_NAME STREQUAL Linux)

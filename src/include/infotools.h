@@ -75,6 +75,8 @@ extern unsigned long VERBOSITY;
 namespace KruncherTools
 {
 	using namespace std;
+	inline const string GetUuid(){return "";}
+#if 0
 #ifdef UNIX
 	inline const string GetUuid()
 	{
@@ -98,6 +100,10 @@ namespace KruncherTools
 		return uuid;
 	}
 #endif
+#endif
+
+
+
 	inline ostream& separator( ostream& o ) { o << "/"; return o; }
 	inline ostream& widetxt(ostream& o) {o<<left<<setfill(' ')<<setw(12); return o;}
 	inline ostream& widenum(ostream& o) {o<<right<<setfill(' ')<<setw(12)<<fixed<<setprecision( 2 ); return o;}

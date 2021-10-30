@@ -132,6 +132,7 @@ namespace KruncherMimes
 		typedef Chunk< SocketType, chunksize > ChunkType;
 		typedef vector< ChunkType > ChunksType;
 		SocketReadWriter( SocketType& _sock ) : sock( _sock ), ndx( 0 ), HeaderReadLength( 0 ) {}
+		//virtual ~SocketReadWriter( ) {}
 		virtual void flush() { sock.flush(); }
 		virtual void write( const unsigned char* data, size_t datalen)
 			{ sock.write( (char*) data, datalen ); }
@@ -141,7 +142,7 @@ namespace KruncherMimes
 			do
 			{
 				ChunkType C;
-				push_back( C );
+				this->push_back( C );
 				ChunkType& chunk( this->back() );
 				bread=chunk.read( sock );
 			} while ( ! eomime( bread ) );
@@ -183,7 +184,7 @@ namespace KruncherMimes
 			while ( ndx < L )
 			{
 				ChunkType C;
-				push_back( C );
+				this->push_back( C );
 				ChunkType& chunk( this->back() );
 				const size_t bread( chunk.read( sock, L-ndx ) );
 				ndx+=bread;
