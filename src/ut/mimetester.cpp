@@ -52,11 +52,12 @@ struct IoFile : ifstream
 
 struct TestResult
 {
-	TestResult( const string _headers, const size_t _ContentLength, const binarystring _payload )
-		: headers( _headers ), ContentLength( _ContentLength ), payload( _payload ) {}
+	TestResult( const string _headers, const size_t _ContentLength, const binarystring _payload, const bool _compare=true )
+		: headers( _headers ), ContentLength( _ContentLength ), payload( _payload ), compare( _compare ) {}
 	const string headers;
 	size_t ContentLength;
 	const binarystring payload;
+	const bool compare;
 
 	const string GetRequestName()
 	{
@@ -80,6 +81,26 @@ TestResult Consume( SocketManager& sock )
 	KruncherTools::stringvector Headers;
 	Headers.split( headers, "\r\n" );
 
+
+	string TransferEncoding;	
+	for ( KruncherTools::stringvector::const_iterator hit=Headers.begin();hit!=Headers.end();hit++)
+	{
+		binarystring payload;
+		const string H( *hit );
+		if ( H.find("Transfer-Encoding:chunked") == 0 )
+		{
+			TestResult t( headers, 0, payload, false );
+
+			string line;
+			sock.getline( line, 512 );
+			char *Ender( NULL );
+			const size_t ChunkSize(strtol( line.c_str(), &Ender, 16 ));
+			const binarystring& Payload( sock.Payload( ChunkSize ) );
+			cout << "Payload:" << endl << (char*) Payload.data() << endl;
+			return t;
+		}
+	}
+
 	size_t ContentLength( 0 );
 	for ( KruncherTools::stringvector::const_iterator hit=Headers.begin();hit!=Headers.end();hit++)
 	{
@@ -93,8 +114,30 @@ TestResult Consume( SocketManager& sock )
 			ContentLength=strtol( cls.c_str(), &Ender, 10 );
 		}
 	}
-	const binarystring& payload( sock.Payload( ContentLength ) );
-	TestResult result( headers, ContentLength, payload ) ;
+
+	if ( false )
+	{
+		const binarystring& payload( sock.Payload( ContentLength ) );
+		TestResult result( headers, ContentLength, payload ) ;
+		return result;
+	} else {
+		const size_t pieces( 4 );
+		size_t piece( ContentLength / pieces );
+		size_t much( 0 );
+		while ( much < ContentLength )
+		{
+			const binarystring& part( sock.Payload( piece ) );
+			much+=piece;
+			if ( much == ContentLength )
+			{
+				TestResult result( headers, ContentLength, part ) ;
+				return result;
+			}
+			piece=min( piece, ContentLength-much );
+		}
+	}
+	const binarystring dummy;
+	TestResult result( headers, 0, dummy ) ;
 	return result;
 }
 
@@ -103,48 +146,53 @@ template < size_t chunksize >
 {
 	const string ipath( string("../../src/tests/" ) + fname );
 	const string opath( string("../../src/tests/" ) + fname + string("out") );
+	//cout << teal << ipath << normal << endl;
 	IoFile io( ipath.c_str(), opath.c_str()  );
 	SocketReadWriter< IoFile, chunksize  > sock( io );
-#if 0
 	TestResult t( Consume( sock ) );
-	int result( 0 );
-	if ( ! expectation )
-		result=( t.ContentLength != t.payload.size() );
-	else
-		result=( t.ContentLength == t.payload.size() );
-
 	
-	const string RequestName( t.GetRequestName( ) ); 
 
-	bool Same( true );
+	if ( t.compare )
 	{
-		stringstream compname;
-		compname<<"/home/jmt/websites/text/jackmthompson.ninja/" << RequestName;
-		if ( KruncherDirectory::FileExists( compname.str().c_str() ) )
+		int result( 0 );
+		if ( ! expectation )
+			result=( t.ContentLength != t.payload.size() );
+		else
+			result=( t.ContentLength == t.payload.size() );
+
+		
+		const string RequestName( t.GetRequestName( ) ); 
+
+		bool Same( true );
+		if ( ! RequestName.empty() )
 		{
-			const size_t fsize( KruncherDirectory::FileSize( compname.str().c_str() ) );
-			unsigned char* data( (unsigned char*) malloc( fsize ) );
-			if ( ! data ) throw ipath;
-			KruncherDirectory::LoadBinaryFile( compname.str().c_str() , data, fsize );
+			stringstream compname;
+			compname<<"/home/jmt/websites/text/jackmthompson.ninja/" << RequestName;
+			if ( KruncherDirectory::FileExists( compname.str().c_str() ) )
+			{
+				const size_t fsize( KruncherDirectory::FileSize( compname.str().c_str() ) );
+				unsigned char* data( (unsigned char*) malloc( fsize ) );
+				if ( ! data ) throw ipath;
+				KruncherDirectory::LoadBinaryFile( compname.str().c_str() , data, fsize );
 
-			if ( memcmp( data, t.payload.data(), t.ContentLength ) ) Same=false;
-			stringstream ssname;
-			ssname << opath << "." << chunksize;
-			//ofstream o( ssname.str().c_str() );
-			//cout << compname.str() << " " << ssname.str() << endl;
-			io.write( (char*) t.payload.data(), t.ContentLength );
-			free( data );
+				if ( memcmp( data, t.payload.data(), t.ContentLength ) ) Same=false;
+				stringstream ssname;
+				ssname << opath << "." << chunksize;
+				//ofstream o( ssname.str().c_str() );
+				//cout << compname.str() << " " << ssname.str() << endl;
+				io.write( (char*) t.payload.data(), t.ContentLength );
+				free( data );
+			}
 		}
-	}
 
-	
-	if ( result ) cout << green; else cout << red; 
-	if ( ! Same ) cout << bold << blue << redbk;
-	cout << setw( 24 ) << fname << fence << setw( 6 ) << chunksize << fence << setw( 6 ) << t.ContentLength << fence << setw( 6 ) << t.payload.size() << normal << endl;
-	return result;	
-#else
+		
+		if ( result ) cout << green; else cout << red; 
+		if ( ! Same ) cout << bold << blue << redbk;
+		cout << setw( 24 ) << fname << fence << setw( 6 ) << chunksize << fence << setw( 6 ) << t.ContentLength << fence << setw( 6 ) << t.payload.size() << normal << endl;
+		return result;	
+	}
 	return 0;
-#endif
+
 }
 
 int ShortMimeTester()
@@ -166,6 +214,7 @@ int MimeTester()
 	//return ShortMimeTester();
 	int status( 0 );
 	map< string, bool > testfiles;
+	testfiles[ "chunked.txt" ] = false;
 	testfiles[ "badmime.txt" ] = false;
 	testfiles[ "mimetest.txt" ] = true;
 	testfiles[ "badbinaryheaders.txt" ] = true;

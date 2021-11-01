@@ -44,6 +44,8 @@ namespace KruncherMimes
 		virtual operator bool () = 0;
 		virtual void flush() = 0;
 		virtual void write( const unsigned char*, size_t ) = 0;
+		virtual void getline( string&, const size_t  ) = 0;
+		virtual void getline( binarystring&, const size_t  ) = 0;
 	};
 
 	struct ChunkBase
@@ -87,7 +89,7 @@ namespace KruncherMimes
 
 		const size_t Got() const { return got; }
 
-		void operator >> (binarystring& payload )
+		void operator>>(binarystring& payload )
 		{
 			payload.append( &bytes[ 0 ], many );
 		}
@@ -105,15 +107,15 @@ namespace KruncherMimes
 
 	struct Matcher
 	{
-		Matcher() : matched( 0 )
-			{ memcpy( pattern, "\r\n\r\n", 4 ); }
+		Matcher( const char* _pattern ) : matched( 0 ), matchlen( strlen( _pattern ) )
+			{ memcpy( pattern, _pattern, strlen( _pattern ) ); }
 
 		bool operator()( const unsigned char c )
 		{
 			if ( pattern[ matched ] == c )
 			{
 				matched++;
-				if ( matched == sizeof( pattern ) ) return true;
+				if ( matched == matchlen ) return true;
 			} else {
 				matched=0;
 			}
@@ -122,6 +124,7 @@ namespace KruncherMimes
 		private:
 		size_t matched;
 		unsigned char pattern[ 4 ];
+		const size_t matchlen;
 	};
 
 	template < typename SocketType, size_t chunksize >
@@ -131,11 +134,33 @@ namespace KruncherMimes
 	{
 		typedef Chunk< SocketType, chunksize > ChunkType;
 		typedef vector< ChunkType > ChunksType;
-		SocketReadWriter( SocketType& _sock ) : sock( _sock ), ndx( 0 ), HeaderReadLength( 0 ) {}
-		//virtual ~SocketReadWriter( ) {}
+		SocketReadWriter( SocketType& _sock ) 
+			: sock( _sock ), 
+				EoMimeMatcher( "\r\n\r\n" ),
+				EoLineMatcher( "\r\n" ),
+				ndx( 0 ), HeaderReadLength( 0 ) {}
 		virtual void flush() { sock.flush(); }
 		virtual void write( const unsigned char* data, size_t datalen)
 			{ sock.write( (char*) data, datalen ); }
+
+		virtual void getline( string& line, const size_t maxlen )
+		{
+			const binarystring& SoPayload( Payload( 16 ) );
+			if ( SoPayload.empty() ) return;
+			int eoln( 0 );
+			for ( size_t j=0;j<SoPayload.size();j++ )
+			{
+				const unsigned char C( SoPayload[ j ] );
+				if ( EoLineMatcher( C ) )
+					{eoln=j;break;}
+			}
+			if ( ! eoln ) return;
+			line.assign( (char*) SoPayload.data(), 0, eoln );
+			payload.erase( 0, eoln+1 );
+		} 
+
+		virtual void getline( binarystring& line, const size_t maxlen) {}
+
 		operator bool ()
 		{
 			size_t bread( 0 );
@@ -180,7 +205,7 @@ namespace KruncherMimes
 
 		const binarystring& Payload( const size_t len )
 		{
-			const size_t L( len + HeaderReadLength );
+			const size_t L( payload.size() + len + HeaderReadLength );
 			while ( ndx < L )
 			{
 				ChunkType C;
@@ -197,7 +222,14 @@ namespace KruncherMimes
 				ch >> payload;
 			}
 
-			payload.erase(0, headers.size() +strlen( "\r\n\r\n" ) );
+			if ( ! headers.empty() )
+			{
+				payload.erase( 0, headers.size() +strlen( "\r\n\r\n" ) );
+				headers.clear();
+			}
+
+			ChunksType::clear();
+
 			return payload;
 		}
 		private:
@@ -216,16 +248,16 @@ namespace KruncherMimes
 			for ( size_t j=0;j<bread;j++ )
 			{
 				const unsigned char C( Next( ndx++ ) );
-				if ( matcher( C ) )
+				if ( EoMimeMatcher( C ) )
 					return true;
 			}
 			return false;
 		}
-
 		string headers;
 		binarystring  payload;
 		SocketType& sock;
-		Matcher matcher;
+		Matcher EoMimeMatcher;
+		Matcher EoLineMatcher;
 		size_t ndx;
 		size_t HeaderReadLength;
 	};
