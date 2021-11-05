@@ -3,7 +3,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/CMakeUtilities.txt)
 
 
 set(CMAKE_CXX_FLAGS " -pthread " )
-add_compile_options(-ggdb)
+add_compile_options(-ggdb  -gdwarf-2  )
 #set(CMAKE_CXX_COMPILER "g++")
 #set(CMAKE_CXX_COMPILER "clang++")
 
