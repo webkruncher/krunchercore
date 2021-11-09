@@ -114,6 +114,7 @@ namespace KruncherTools
 	inline ostream& bold( ostream& o ) { o << "\033[1m"; return o; }
 	inline ostream& rvid( ostream& o ) { o << "\033[7m"; return o; }
 	inline ostream& ulin( ostream& o ) { o << "\033[4m"; return o; }
+	inline ostream& blink( ostream& o ) { o << "\033[5m"; return o; }
 
 	inline ostream& blackbk( ostream& o ) { o << "\033[40m"; return o; }
 	inline ostream& redbk( ostream& o ) { o << "\033[41m"; return o; }
@@ -520,7 +521,7 @@ namespace KruncherTools
 		what=ss.str();
 	}
 
-	inline string tracetabs( const int Level ) { stringstream ss; for ( int j=0; j<(Level+1); j++ ) ss << tab; return ss.str();}
+	inline string tracetabs( const int Level ) { stringstream ss; for ( int j=0; j<(Level); j++ ) ss << tab; return ss.str();}
 
 
 	inline string StripNewLines( string in )
