@@ -50,9 +50,6 @@
 
 #include <syslog.h>
 
-#ifdef LINUX
-#include <uuid/uuid.h>
-#endif
 
 #ifdef UNIX
 #include <uuid.h>
@@ -83,7 +80,7 @@ namespace KruncherTools
 		uuid_t  UuId;
 		unsigned int uuidstatus( 0 );
 		uuid_create(&UuId, &uuidstatus); 
-		char* result( NULL );	
+		char* result( nullptr );	
 		uuid_to_string(&UuId, &result, &uuidstatus);
 		const string uuid( (char*) result );
 		free( result );
@@ -114,7 +111,6 @@ namespace KruncherTools
 	inline ostream& bold( ostream& o ) { o << "\033[1m"; return o; }
 	inline ostream& rvid( ostream& o ) { o << "\033[7m"; return o; }
 	inline ostream& ulin( ostream& o ) { o << "\033[4m"; return o; }
-	inline ostream& blink( ostream& o ) { o << "\033[5m"; return o; }
 
 	inline ostream& blackbk( ostream& o ) { o << "\033[40m"; return o; }
 	inline ostream& redbk( ostream& o ) { o << "\033[41m"; return o; }
@@ -145,7 +141,7 @@ namespace KruncherTools
 	inline ostream& logtime( ostream& o ) 
 	{ 
 		struct timeval when ;
-		gettimeofday( &when, NULL );
+		gettimeofday( &when, nullptr );
 		const unsigned long tod( when.tv_sec*1E6 + when.tv_usec ); 
 		o << fence << tod << fence; 
 		return o; 
@@ -396,12 +392,12 @@ namespace KruncherTools
 		{
 			key_t key( memid );
 			int shmid( 0 );
-			void* shm( NULL );
+			void* shm( nullptr );
 
 			if ((shmid = shmget(key, sizeof( VT ), IPC_CREAT | 0666)) < 0) 
 				throw string("Cannot create shared memory");
 
-			if ((shm = shmat(shmid, NULL, 0)) == (char *) -1) 
+			if ((shm = shmat(shmid, nullptr, 0)) == (char *) -1) 
 				throw string("Cannot attach to shared memory");
 
 			variable=(VT*) shm;
@@ -521,7 +517,7 @@ namespace KruncherTools
 		what=ss.str();
 	}
 
-	inline string tracetabs( const int Level ) { stringstream ss; for ( int j=0; j<(Level); j++ ) ss << tab; return ss.str();}
+	inline string tracetabs( const int Level ) { stringstream ss; for ( int j=0; j<(Level+1); j++ ) ss << tab; return ss.str();}
 
 
 	inline string StripNewLines( string in )
@@ -568,7 +564,7 @@ namespace KruncherTools
 	{
 		string ret; 
 		FILE* fp = popen((char*)what.c_str(),"r");
-		if (fp == NULL) {return "";}
+		if (fp == nullptr) {return "";}
 		while ( true )
 		{
 			char buf[514];
@@ -876,7 +872,7 @@ namespace KruncherTools
 
 	struct Trace 
 	{ 
-		Trace() : pid( 0 ), tid( NULL ) {}
+		Trace() : pid( 0 ), tid( 0 ) {}
 		Trace( const string what, pid_t _pid, pthread_t _tid ) 
 			: fname(HomeData( what ) ), pid( _pid ), tid( _tid )
 		{}
@@ -970,26 +966,6 @@ namespace KruncherTools
 	};
 
 
-
-	inline void ltrim(std::string &s)
-	{
-	    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
-		return !std::isspace(ch);
-	    }));
-	}
-
-	inline void rtrim(std::string &s)
-	{
-	    s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
-		return !std::isspace(ch);
-	    }).base(), s.end());
-	}
-
-	inline void trim(std::string &s)
-	{
-	    ltrim(s);
-	    rtrim(s);
-	}
 
 
 
