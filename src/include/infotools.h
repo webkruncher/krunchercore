@@ -106,6 +106,7 @@ namespace KruncherTools
 	inline ostream& widenum(ostream& o) {o<<right<<setfill(' ')<<setw(12)<<fixed<<setprecision( 2 ); return o;}
 	inline ostream& tab( ostream& o ) { o << "\t"; return o; }
 	inline ostream& semi( ostream& o ) { o << ";"; return o; }
+	inline ostream& coma( ostream& o ) { o << ","; return o; }
 	inline ostream& normal( ostream& o ) { o << "\033[0m"; return o; }
 	inline ostream& equ( ostream& o ) { o << "="; return o; }
 	inline ostream& bold( ostream& o ) { o << "\033[1m"; return o; }
@@ -518,7 +519,7 @@ namespace KruncherTools
 		what=ss.str();
 	}
 
-	inline string tracetabs( const int Level ) { stringstream ss; for ( int j=0; j<(Level+1); j++ ) ss << tab; return ss.str();}
+	inline const string tracetabs( const int Level ) { stringstream ss; for ( int j=0; j<(Level+1); j++ ) ss << tab; return ss.str();}
 
 
 	inline string StripNewLines( string in )
@@ -990,6 +991,7 @@ namespace KruncherTools
 
 
 
+	inline string Slice( const string& txt, const pair<size_t,size_t>& pos ) { return txt.substr( pos.first, pos.second-pos.first ); }
 
 } // KruncherTools
 

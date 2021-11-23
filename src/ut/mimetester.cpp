@@ -150,6 +150,8 @@ template < size_t chunksize >
 	IoFile io( ipath.c_str(), opath.c_str()  );
 	SocketReadWriter< IoFile, chunksize  > sock( io );
 	TestResult t( Consume( sock ) );
+
+	//cout << t.payload.c_str() << endl;
 	
 
 	if ( t.compare )
@@ -214,11 +216,14 @@ int MimeTester()
 	//return ShortMimeTester();
 	int status( 0 );
 	map< string, bool > testfiles;
+#if 0
 	testfiles[ "chunked.txt" ] = false;
 	testfiles[ "badmime.txt" ] = false;
 	testfiles[ "mimetest.txt" ] = true;
 	testfiles[ "badbinaryheaders.txt" ] = true;
 	testfiles[ "binarypayload.txt" ] = true;
+#endif
+	testfiles[ "shortpayload.txt" ] = true;
 	for ( map< string, bool >::const_iterator it=testfiles.begin();it!=testfiles.end();it++)
 	{
 		const string txt( it->first );
