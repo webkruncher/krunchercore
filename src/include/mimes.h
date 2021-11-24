@@ -206,15 +206,17 @@ namespace KruncherMimes
 		const binarystring& Payload( const size_t len )
 		{
 			const size_t L( payload.size() + len + HeaderReadLength );
-			while ( ndx < L )
-			{
-				ChunkType C;
-				this->push_back( C );
-				ChunkType& chunk( this->back() );
-				const size_t bread( chunk.read( sock, L-ndx ) );
-				ndx+=bread;
-				if ( bread != chunksize ) break;
-			} 
+			// Needs work...
+			if ( (L-ndx) != len )
+				while ( ndx < L )
+				{
+					ChunkType C;
+					this->push_back( C );
+					ChunkType& chunk( this->back() );
+					const size_t bread( chunk.read( sock, L-ndx ) );
+					ndx+=bread;
+					if ( bread != chunksize ) break;
+				} 
 
 			for ( typename ChunksType::iterator cit=ChunksType::begin(); cit!=this->end(); cit++ )
 			{

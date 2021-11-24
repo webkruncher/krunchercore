@@ -40,6 +40,14 @@ struct IoFile : ifstream
 	{}
 	virtual ~IoFile(){}
 	virtual void flush(){ o.flush(); }
+	virtual size_t read( char* dest, const size_t size )
+	{
+		//if ( ifstream::fail() ) throw string( "IoFile failed before read") ;
+		ifstream::read( dest, size ); 
+		//if ( ifstream::fail() ) throw string( "IoFile failed after read") ;
+		if ( ifstream::fail() ) cout << "!";
+		return size;
+	}
 	virtual size_t write( char* dest, const size_t size )
 	{
 		o.write( dest, size );
@@ -216,14 +224,15 @@ int MimeTester()
 	//return ShortMimeTester();
 	int status( 0 );
 	map< string, bool > testfiles;
-#if 0
+
 	testfiles[ "chunked.txt" ] = false;
 	testfiles[ "badmime.txt" ] = false;
 	testfiles[ "mimetest.txt" ] = true;
 	testfiles[ "badbinaryheaders.txt" ] = true;
 	testfiles[ "binarypayload.txt" ] = true;
-#endif
+
 	testfiles[ "shortpayload.txt" ] = true;
+
 	for ( map< string, bool >::const_iterator it=testfiles.begin();it!=testfiles.end();it++)
 	{
 		const string txt( it->first );
