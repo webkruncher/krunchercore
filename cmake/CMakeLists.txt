@@ -26,41 +26,46 @@ ENDIF()
 if(DEFINED ENV{KRUNCHER_DEV_LIBS})
 	set(INCPATH /home/jmt/Info)
 	set(LIBPATH /home/jmt/Info)
+	set(INCSUFFIX src/include)
+	message("Using KRUNCHER_DEV_LIBS")
 else()
 	set(INCPATH /usr/local/include/infokruncher)
 	set(LIBPATH /usr/local/lib/infokruncher)
+	message("NOT Using KRUNCHER_DEV_LIBS")
 endif()
 
 
 function(IncludeProjects)
 	foreach(arg IN LISTS ARGN)
-		set(INCLUDE_PATHS ${INCLUDE_PATHS} ${INCPATH}/${arg})
+		message("Find ${arg} includes in: ${INCPATH}")
+		set(INCLUDE_PATHS ${INCLUDE_PATHS} ${INCPATH}/${arg}/${INCSUFFIX})
 	endforeach()
 	set(INCLUDE_PATHS ${INCLUDE_PATHS} PARENT_SCOPE )
-	#message(${BlueBkColor}${YellowColor}${CMAKE_CURRENT_LIST_DIR}${NormalColor}${GreenColor}${INCLUDE_PATHS}${NormalColor} )
+	message(${BlueBkColor}${YellowColor}${CMAKE_CURRENT_LIST_DIR}${NormalColor}${GreenColor}->${INCLUDE_PATHS}${NormalColor} )
 endfunction()
 
 function(IncludeLibraryPaths)
 	foreach(arg IN LISTS ARGN)
+		message("Find ${arg} library in: ${LIBPATH}")
 		execute_process(
-			COMMAND bash "-c" "find ${LIBPATH}/${arg}/src.build -name \"*.a\" -exec dirname {} \; | xargs | tr ' ' ';' "
+			COMMAND bash "-c" "find ${LIBPATH}/${arg}/ -name \"*.a\" -exec dirname {} \; | xargs | tr ' ' ';' "
 			OUTPUT_VARIABLE TMPLIBPATHS
 		)
 		execute_process(
-			COMMAND bash "-c" "find ${LIBPATH}/${arg}/src.build -name \"*.a\" -exec basename {} \; | sed 's/^lib//g' | sed 's/\.a$//g'  | xargs | tr ' ' ';' "
+			COMMAND bash "-c" "find ${LIBPATH}/ -name \"lib${arg}.a\" -exec basename {} \; | sed 's/^lib//g' | sed 's/\.a$//g'  | xargs | tr ' ' ';' "
 			OUTPUT_VARIABLE TMPLIBS
 		)
-		#message("TMPLIBS:${TMPLIBS}")
+		message("TMPLIBS:${TMPLIBS}")
 		string(STRIP "${TMPLIBS}" TMPLIBS )
 		set(LIBRARIES ${LIBRARIES};${TMPLIBS})
-		#message("TMPLIBPATHS:${TMPLIBPATHS}")
 		string(STRIP "${TMPLIBPATHS}" TMPLIBPATHS )
+		message("TMPLIBPATHS:${TMPLIBPATHS}")
 		set(LIBRARY_PATHS ${LIBRARY_PATHS};${TMPLIBPATHS})
 	endforeach()
 	set(LIBRARY_PATHS ${LIBRARY_PATHS} PARENT_SCOPE )
 	set(LIBRARIES ${LIBRARIES} PARENT_SCOPE )
 	#message(LIBRPATHS:${TealBkColor}${BlackColor}${CMAKE_CURRENT_LIST_DIR}${NormalColor}${GreenColor}${LIBRARY_PATHS}${NormalColor} )
-	#message(LIBRARIES:${BlueBkColor}${GreenColor}${CMAKE_CURRENT_LIST_DIR}${NormalColor}${GreenColor}${LIBRARIES}${NormalColor} )
+	message(LIBRARIES:${BlueBkColor}${GreenColor}${CMAKE_CURRENT_LIST_DIR}${NormalColor}${GreenColor}->${LIBRARIES}${NormalColor} )
 endfunction()
 
 function(IncludeLibraries)

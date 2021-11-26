@@ -6,7 +6,7 @@ install(
     FILES
 	    ${includes}    
 		    OPTIONAL
-		    DESTINATION include/infokruncher
+		    DESTINATION include/infokruncher/krunchercore
 )
 
 add_library(
@@ -30,4 +30,4 @@ target_link_libraries(
 
 
 
-
+add_subdirectory( tracer )
