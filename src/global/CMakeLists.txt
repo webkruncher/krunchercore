@@ -39,5 +39,5 @@ target_link_libraries(
 )
 
 	    
-install(TARGETS krunchercore DESTINATION lib/infokruncher/krunchercore )
+install(TARGETS krunchercore DESTINATION lib/infokruncher/krunchercore/global )
 
