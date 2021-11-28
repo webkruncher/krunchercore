@@ -1,4 +1,8 @@
 
+if [ ! -z ${KRUNCHER_JOURNAL} ]; then
+	mkdir -p ${KRUNCHER_JOURNAL}
+fi
+
 function ShowBuild
 {
 	echo -ne "\033[33mBuild Info\n\033[33m"

@@ -27,7 +27,33 @@
  */
 
 #include <tracer.h>
+#include <unistd.h>
+using namespace std;
 
 unsigned long  VERBOSITY(0);
+
+#include <infotools.h>
+#include <directory.h>
+
+namespace KrunchTracer
+{
+	inline string JournalFileName( const string dest )
+	{
+		string s( dest );
+		if ( ! KruncherDirectory::DirectoryExists( dest ) )
+			throw string( dest ) + string( " does not exist" );
+		stringstream ss;
+		ss << dest << "/journal." << getpid() << "." << pthread_self() << "." << "journal" ;
+		KruncherTools::Log( VERB_ALWAYS, "JournalFile", ss.str() );
+		return ss.str();
+	}
+
+	Recorder::operator bool ( ) 
+	{
+		const string fname( JournalFileName( dest ) );
+		open( fname, ios::app );
+		return true;
+	}
+};
 
 

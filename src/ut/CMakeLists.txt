@@ -17,6 +17,7 @@ target_include_directories(
 		include/
 		./Directory/
 		../include/
+		../include/tracer
 		${INCLUDE_PATHS}
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
 		$<INSTALL_INTERFACE:include>

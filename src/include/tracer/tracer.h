@@ -29,5 +29,21 @@
 #ifndef KRUNCHER_TRACER_H
 #define KRUNCHER_TRACER_H
 extern unsigned long VERBOSITY;
+
+#include <fstream>
+#include <sstream>
+
+namespace KrunchTracer
+{
+	struct Recorder : std::ofstream
+	{
+		Recorder() = delete;
+		Recorder(const char* _dest) : dest( _dest ) {};
+		operator bool ();
+		private:
+		const std::string dest;
+	};
+};
+
 #endif // KRUNCHER_TRACER_H
 

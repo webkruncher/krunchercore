@@ -32,6 +32,7 @@
 #include <vector>
 #include <sstream>
 #include <infotools.h>
+#include <tracer.h>
 namespace KruncherMimes
 {
 	using namespace std;
@@ -65,6 +66,12 @@ namespace KruncherMimes
 		{
 			const size_t get( min( chunksize, much ) );
 			sock.read( (char*) bytes, get );
+			const char* journaldest( getenv( "KRUNCHER_JOURNAL" ) );
+			if ( journaldest )
+			{
+				KrunchTracer::Recorder journal( journaldest );
+				if (  journal ) journal.write( (char*) bytes, get );
+			}
 			many=sock.gcount();
 			return many;
 		}
@@ -207,6 +214,7 @@ namespace KruncherMimes
 		{
 			const size_t L( payload.size() + len + HeaderReadLength );
 			// Needs work...
+cout << "Loading payload: " << len << endl;
 			if ( (L-ndx) != len )
 				while ( ndx < L )
 				{
