@@ -33,6 +33,7 @@ using namespace KruncherTools;
 #include <directorytest.h>
 
 int MimeTester();
+int JournalTester();
 
 struct Tests : map< string, unsigned long >
 {
@@ -52,7 +53,8 @@ int main(int argc, char** argv)
 	{
 		Tests tests;
 		//tests[  "Directory.simple" ] = DirectoryTester::FilteredDirectoryListing( "/home/jmt/websites" );
-		tests[  "Mimes" ] = MimeTester();
+		//tests[  "Mimes" ] = MimeTester();
+		tests[  "Journals" ] = JournalTester();
 		return tests();
 	}
 	catch( const exception& e ) { ssexcept<<e.what(); }

@@ -1,0 +1,20 @@
+POST /api/v1/partitions HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJraWQiOiIweDAwNWUyNjZkZWFkOTQ4YTQ0NyIsImFsZyI6IkVTMjU2In0.eyJwYXJ0aXRpb25zIjp7InJvb3QiOlsic28iXX0sInN1YiI6InNvQHJvb3QiLCJvcmlnIjoiNzMuMjAxLjE4NC44OCIsImlzcyI6IlVOQk9VTkQiLCJpc19yZWZyZXNoIjpmYWxzZSwidXNlX2VwaGVtZXJhbCI6ZmFsc2UsImV4cCI6MTYzNzAwOTg4MiwiaWF0IjoxNjM3MDA4MDgyLCJqdGkiOiI0YmEwYWE2OC1kZWQ2LTQ0NDgtYTcxOS1iMTkxNGQzMTc1ZWUifQ.CoVIk3WOuFfS6QOkfqydqPuStWFBN5zqeuMH070IDfgfhJtrggn1iSHUe87UpCHFsq7UIVupwpzf-iexDmuoCQ
+User-Agent: PostmanRuntime/7.28.4
+Accept: */*
+Host: webkruncher.com
+Accept-Encoding: gzip, deflate, br
+Connection: keep-alive
+Content-Length: 202
+
+
+{
+    "name": "test_parti_84.key",
+    "newClient": {
+        "name": "test_parti_84.key.client",
+        "pfxPassword": "Password1!"
+    },
+    "soPassword": "Password1!",
+    "allowKeystores": true
+}

@@ -38,7 +38,7 @@ cmake -S .  -B  ../src.build
 cmake  --build ../src.build/ 
 [ $? != 0 ] && exit -1
 if [ "${1}" == "-test" ]; then 
-	pushd ../src.build/ut
+	#pushd ../src.build/ut
 	./krunchercoreut
 	if [ $? != 0 ]; then
 		echo -ne "\033[31mTest failed\033[0m\n"  
@@ -46,7 +46,7 @@ if [ "${1}" == "-test" ]; then
 	else
 		echo -ne "\033[32mTest succeeded\033[0m\n"
 	fi
-	popd
+	#popd
 fi
 
 [ "${1}" == "-install" ] &&  sudo cmake --install ../src.build

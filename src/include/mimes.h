@@ -72,6 +72,7 @@ namespace KruncherMimes
 				KrunchTracer::Recorder journal( journaldest );
 				if (  journal ) journal.write( (char*) bytes, get );
 			}
+
 			many=sock.gcount();
 			return many;
 		}
@@ -214,8 +215,7 @@ namespace KruncherMimes
 		{
 			const size_t L( payload.size() + len + HeaderReadLength );
 			// Needs work...
-cout << "Loading payload: " << len << endl;
-			if ( (L-ndx) != len )
+			//if ( (L-ndx) != len )
 				while ( ndx < L )
 				{
 					ChunkType C;

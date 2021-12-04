@@ -31,13 +31,17 @@ using namespace std;
 using namespace KruncherMimes;
 #include <infotools.h>
 #include <directory.h>
+#include <mimetester.h>
+#include <hypertools.h>
 
 
 struct IoFile : ifstream 
 {
 	IoFile( const string in, const string out )
 		: ifstream( in.c_str(), std::ifstream::in ), o( out.c_str() ) 
-	{}
+	{
+		cout << in << endl;
+	}
 	virtual ~IoFile(){}
 	virtual void flush(){ o.flush(); }
 	virtual size_t read( char* dest, const size_t size )
@@ -45,7 +49,7 @@ struct IoFile : ifstream
 		//if ( ifstream::fail() ) throw string( "IoFile failed before read") ;
 		ifstream::read( dest, size ); 
 		//if ( ifstream::fail() ) throw string( "IoFile failed after read") ;
-		if ( ifstream::fail() ) cout << "!";
+		//if ( ifstream::fail() ) cout << "!";
 		return size;
 	}
 	virtual size_t write( char* dest, const size_t size )
@@ -60,25 +64,21 @@ struct IoFile : ifstream
 
 struct TestResult
 {
-	TestResult( const string _headers, const size_t _ContentLength, const binarystring _payload, const bool _compare=true )
+	TestResult( const Hyper::MimeHeaders _headers, const size_t _ContentLength, const binarystring _payload, const bool _compare=true )
 		: headers( _headers ), ContentLength( _ContentLength ), payload( _payload ), compare( _compare ) {}
-	const string headers;
+	const Hyper::MimeHeaders headers;
 	size_t ContentLength;
 	const binarystring payload;
 	const bool compare;
 
-	const string GetRequestName()
+	string requestfile;
+	const string GetRequestName() 
 	{
-		stringvector sv;
-		sv.split( headers, "\r\r" );
-		for ( stringvector::iterator it=sv.begin();it!=sv.end();it++)
-		{
-			const string& s( *it );
-			const size_t r( s.find("Request:") );
-				if ( r!=string::npos )
-					return s.substr( r, s.size()-r );
-		}
-		return "";
+		Hyper::MimeHeaders::const_iterator it( headers.find( "Request" ) ); 
+		if ( it == headers.end() ) return "";
+		requestfile=it->second;
+		KruncherTools::trim( requestfile );
+		return requestfile;
 	}
 };
 
@@ -86,47 +86,29 @@ TestResult Consume( SocketManager& sock )
 {
 	if ( ! sock ) throw string("Cannot read mime");
 	const string& headers( sock.Headers() );
-	KruncherTools::stringvector Headers;
-	Headers.split( headers, "\r\n" );
+	Hyper::MimeHeaders Headers( headers );
+	string TransferEncoding( Headers.TransferEncoding() );	
 
-
-	string TransferEncoding;	
-	for ( KruncherTools::stringvector::const_iterator hit=Headers.begin();hit!=Headers.end();hit++)
+	if ( TransferEncoding ==  "chunked") 
 	{
 		binarystring payload;
-		const string H( *hit );
-		if ( H.find("Transfer-Encoding:chunked") == 0 )
-		{
-			TestResult t( headers, 0, payload, false );
+		TestResult t( headers, 0, payload, false );
 
-			string line;
-			sock.getline( line, 512 );
-			char *Ender( NULL );
-			const size_t ChunkSize(strtol( line.c_str(), &Ender, 16 ));
-			const binarystring& Payload( sock.Payload( ChunkSize ) );
-			cout << "Payload:" << endl << (char*) Payload.data() << endl;
-			return t;
-		}
+		string line;
+		sock.getline( line, 512 );
+		char *Ender( NULL );
+		const size_t ChunkSize(strtol( line.c_str(), &Ender, 16 ));
+		const binarystring& Payload( sock.Payload( ChunkSize ) );
+		//cout << "Payload:" << endl << (char*) Payload.data() << endl;
+		return t;
 	}
 
-	size_t ContentLength( 0 );
-	for ( KruncherTools::stringvector::const_iterator hit=Headers.begin();hit!=Headers.end();hit++)
-	{
-		const string H( *hit );
-		if ( H.find("Content-Length:") == 0 )
-		{ 
-			const size_t coln( H.find( ":" ) );
-			if ( coln == string::npos ) throw H;
-			const string cls( H.substr( coln+1, H.size()-1 ) );
-			char *Ender( NULL );
-			ContentLength=strtol( cls.c_str(), &Ender, 10 );
-		}
-	}
+	size_t ContentLength( Headers.ContentLength() );
 
 	if ( false )
 	{
 		const binarystring& payload( sock.Payload( ContentLength ) );
-		TestResult result( headers, ContentLength, payload ) ;
+		TestResult result( Headers, ContentLength, payload ) ;
 		return result;
 	} else {
 		const size_t pieces( 4 );
@@ -138,7 +120,7 @@ TestResult Consume( SocketManager& sock )
 			much+=piece;
 			if ( much == ContentLength )
 			{
-				TestResult result( headers, ContentLength, part ) ;
+				TestResult result( Headers, ContentLength, part ) ;
 				return result;
 			}
 			piece=min( piece, ContentLength-much );
@@ -152,8 +134,9 @@ TestResult Consume( SocketManager& sock )
 template < size_t chunksize >
 	int MimeTest( const string fname, const bool expectation )
 {
-	const string ipath( string("../../src/tests/" ) + fname );
-	const string opath( string("../../src/tests/" ) + fname + string("out") );
+	const string ipath( string("tests/" ) + fname );
+	const string opath( string("tests/" ) + fname + string("out") );
+
 	//cout << teal << ipath << normal << endl;
 	IoFile io( ipath.c_str(), opath.c_str()  );
 	SocketReadWriter< IoFile, chunksize  > sock( io );
@@ -245,3 +228,33 @@ int MimeTester()
 	}
 	if ( status ) return 0; else return 1;
 }
+
+
+int JournalTester()
+{
+	int status( 0 );
+	map< string, bool > testfiles;
+
+	regex_t rx;
+	const string exp( "^get.*\\.journal$" );
+	if ( regcomp( &rx, exp.c_str(), REG_EXTENDED ) ) throw exp;
+	MimeTests::Dir dir( "tests", true, rx );
+	if ( ! dir ) return -1;
+
+	for ( MimeTests::Dir::const_iterator it=dir.begin();it!=dir.end();it++ )
+		testfiles[ *it ] = false;
+	
+	for ( map< string, bool >::const_iterator it=testfiles.begin();it!=testfiles.end();it++)
+	{
+		const string txt( it->first );
+		const bool expectation( it->second );
+		//status|=MimeTest< 116 >( txt, expectation );
+		status|=MimeTest< 12 >( txt, expectation );
+		//status|=MimeTest< 8192 >( txt, expectation );
+		//status|=MimeTest< 4495 >( txt, expectation );
+		status|=MimeTest< 4608 >( txt, expectation );
+	}
+	if ( status ) return 0; else return 1;
+}
+
+
