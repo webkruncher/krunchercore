@@ -62,6 +62,7 @@ extern volatile bool TERMINATE;
 extern unsigned long VERBOSITY;
 
 #define VERB_EVERYTHING 	0XFFFFFFFFFFFF
+#define VERB_CONSOLE 		0X800000000000
 #define VERB_ALWAYS 		0XFFFFFFFFFFFF
 #define VERB_SIGNALS 		0X1000
 #define VERB_CRUD 		0X2000
@@ -588,6 +589,10 @@ namespace KruncherTools
 
 	inline void Log( const string& where, const string txt )
 	{
+		if ( VERBOSITY & VERB_CONSOLE )
+		{
+			cerr << fence << where << fence << txt << fence << endl;
+		}
 		if ( VERBOSITY != VERB_EVERYTHING ) return;
 		stringstream ssmsg;
 		ssmsg << fence << where << fence << getpid() << fence << pthread_self() << fence << txt << fence;
@@ -596,6 +601,10 @@ namespace KruncherTools
 
 	inline void Log( const unsigned long verbose, const string where, const string txt )
 	{
+		if ( VERBOSITY & VERB_CONSOLE )
+		{
+			cerr << fence << where << fence << txt << fence << endl;
+		}
 		bool Send( false );
 
 		if ( verbose & VERBOSITY )  Send=true;
