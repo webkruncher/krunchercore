@@ -32,16 +32,20 @@ function Clean
 
 function Build
 {
-	[ "${1}" == "-clean" ] &&  Clean
-	shift
+	if [ "${1}" == "-clean" ]; then
+		Clean
+		shift
+	fi
 
 	mkdir -p ../src.build
 	cmake -S .  -B  ../src.build
 	cmake  --build ../src.build/ 
 
 
-	[ "${1}" == "-install" ] &&  Install
-	shift
+	if [ "${1}" == "-install" ]; then 
+		Install
+		shift
+	fi
 }
 
 
