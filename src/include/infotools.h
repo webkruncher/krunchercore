@@ -1002,6 +1002,12 @@ namespace KruncherTools
 
 	inline string Slice( const string& txt, const pair<size_t,size_t>& pos ) { return txt.substr( pos.first, pos.second-pos.first ); }
 
+	inline string& assign( string& a, const string& s )
+	{
+		a = s;
+		return a;
+	}
+
 } // KruncherTools
 
 
