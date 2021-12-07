@@ -17,3 +17,31 @@ function ShowBuild
 	done
 	echo -ne "\033[0m"
 }
+
+function Install
+{
+	sudo cmake --install ../src.build
+}
+
+function Clean
+{
+	[ -d ../src.build ] && sudo rm -rf ../src.build
+}
+
+
+
+function Build
+{
+	[ "${1}" == "-clean" ] &&  Clean
+	shift
+
+	mkdir -p ../src.build
+	cmake -S .  -B  ../src.build
+	cmake  --build ../src.build/ 
+
+
+	[ "${1}" == "-install" ] &&  Install
+	shift
+}
+
+
