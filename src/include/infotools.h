@@ -111,6 +111,7 @@ namespace KruncherTools
 	inline ostream& normal( ostream& o ) { o << "\033[0m"; return o; }
 	inline ostream& equ( ostream& o ) { o << "="; return o; }
 	inline ostream& bold( ostream& o ) { o << "\033[1m"; return o; }
+	inline ostream& italic( ostream& o ) { o << "\033[3m"; return o; }
 	inline ostream& rvid( ostream& o ) { o << "\033[7m"; return o; }
 	inline ostream& ulin( ostream& o ) { o << "\033[4m"; return o; }
 	inline ostream& blink( ostream& o ) { o << "\033[5m"; return o; }
