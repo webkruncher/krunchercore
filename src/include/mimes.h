@@ -42,76 +42,11 @@ namespace KruncherMimes
 	{
 		virtual string& Headers() = 0;
 		virtual const binarystring& Payload( const size_t len ) = 0;
-		virtual operator bool () = 0;
 		virtual void flush() = 0;
 		virtual void write( const unsigned char*, size_t ) = 0;
-		virtual void getline( string&, const size_t  ) = 0;
-		virtual void getline( binarystring&, const size_t  ) = 0;
+		virtual string getline( const size_t limit ) = 0;
 	};
 
-	struct ChunkBase
-	{
-		private:
-		friend ostream& operator<<( ostream&, const ChunkBase&); 
-		virtual ostream& operator<<( ostream&) const = 0;
-	};
-	inline ostream& operator<<( ostream& o, const ChunkBase& c ) { return c.operator<<(o);}
-
-	template< typename SocketType, size_t chunksize >
-		struct Chunk : ChunkBase
-	{
-		Chunk() : many( 0 ), where( 0 ), got( 0 ) { memset( bytes, 0, chunksize ); } 
-
-		size_t read( SocketType& sock, const size_t much=chunksize )
-		{
-			const size_t get( min( chunksize, much ) );
-			sock.read( (char*) bytes, get );
-			const char* journaldest( getenv( "KRUNCHER_JOURNAL" ) );
-			if ( journaldest )
-			{
-				KrunchTracer::Recorder journal( journaldest );
-				if (  journal ) journal.write( (char*) bytes, get );
-			}
-
-			many=sock.gcount();
-			return many;
-		}
-
-		unsigned char operator[]( const size_t offset ) const
-			{ return bytes[ offset ]; }
-
-		binarystring operator()( const size_t much )
-		{
-			got=min( many, much );
-			binarystring ret( (unsigned char*) &bytes[ where ], got );
-			where+=got;
-			return ret;
-		}
-
-		void operator()( binarystring& s, const size_t much )
-		{
-			got=min( many, much );
-			s.append( &bytes[ where ], got );
-			where+=got;
-		}
-
-		const size_t Got() const { return got; }
-
-		void operator>>(binarystring& payload )
-		{
-			payload.append( &bytes[ 0 ], many );
-		}
-		private:
-		ostream& operator<<( ostream& o ) const
-		{
-			o.write( (char*) &bytes[ 0 ], many );
-			return o;
-		}
-		unsigned char bytes[ chunksize ];
-		size_t many;
-		size_t where;
-		size_t got;
-	};
 
 	struct Matcher
 	{
@@ -135,150 +70,96 @@ namespace KruncherMimes
 		const size_t matchlen;
 	};
 
-	template < typename SocketType, size_t chunksize >
+	template < typename SocketType >
 		struct SocketReadWriter 
-			: vector< Chunk< SocketType, chunksize > > ,
-				SocketManager
+			: SocketManager
 	{
-		typedef Chunk< SocketType, chunksize > ChunkType;
-		typedef vector< ChunkType > ChunksType;
 		SocketReadWriter( SocketType& _sock ) 
 			: sock( _sock ), 
 				EoMimeMatcher( "\r\n\r\n" ),
-				EoLineMatcher( "\r\n" ),
-				ndx( 0 ), HeaderReadLength( 0 ) {}
+				EoLineMatcher( "\r\n" ) {}
 		virtual void flush() { sock.flush(); }
 		virtual void write( const unsigned char* data, size_t datalen)
 			{ sock.write( (char*) data, datalen ); }
 
 
-		virtual void getline( string& line, const size_t maxlen )
+		string getline( const size_t limit )
 		{
-			const binarystring& SoPayload( Payload( 16 ) );
-			if ( SoPayload.empty() ) return;
-			int eoln( 0 );
-			for ( size_t j=0;j<SoPayload.size();j++ )
+			string line;	
+			line.reserve( limit );
+			size_t len( 0 );
+			while ( true )
 			{
-				const unsigned char C( SoPayload[ j ] );
-				if ( EoLineMatcher( C ) )
-					{eoln=j;break;}
+				unsigned char byte;	
+				read( &byte );
+				line.append( (char*) &byte, 1 );
+				if ( line.size() > limit ) break;
+				if ( eol( line ) ) break;
 			}
-			if ( ! eoln ) return;
-			line.assign( (char*) SoPayload.data(), 0, eoln );
-			payload.erase( 0, eoln+1 );
-		} 
-
-		virtual void getline( binarystring& line, const size_t maxlen) {}
-
-
-		operator bool ()
-		{
-			size_t bread( 0 );
-			do
-			{
-				ChunkType C;
-				this->push_back( C );
-				ChunkType& chunk( this->back() );
-				bread=chunk.read( sock );
-			} while ( ! eomime( bread ) );
-			return true;
+			
+			return line;
 		}
 
 		string& Headers()
 		{
-			ChunksType& me( *this );
+			headers.clear();
+			headers.reserve( 512 );
 			size_t len( 0 );
-			while ( len < ndx ) 
+			while ( true )
 			{
-				const size_t bucket( len / chunksize );
-				const binarystring what( me[ bucket ]( ndx - len ) );
-				const pair<bool, size_t > nontext( what.nontext() );
-				if ( nontext.first )
-				{
-					headers.append( (char*) what.data(), nontext.second ); break; 
-					len+=nontext.second;
-				} else {
-					headers+=(char*)what.data();
-					len+=what.size();
-				}
+				unsigned char byte;	
+				read( &byte );
+				headers.append( (char*) &byte, 1 );
+				if ( eoh() ) break;
 			}
-			HeaderReadLength=headers.size();
-			const size_t eoh( headers.find( "\r\n\r\n" ) );
-			if ( eoh!=string::npos ) 
-			{
-				headers.resize( eoh  );
-				headers[ eoh ] = 0;
-			} else headers.clear();
 			
 			return headers;
 		}
 
 		const binarystring& Payload( const size_t want )
 		{
-{ofstream progress( "progress.txt", ios::app ); progress << blue << "Getting payload" << normal << endl;}
-			size_t Have( HeaderReadLength );
-			size_t Want( Have + want );
-//cerr << ".";
-				while ( Have < Want )
-				{
-//cerr << "-" << ndx << "<" << L << ";";
-{ofstream progress( "progress.txt", ios::app ); progress << blue << ndx << " / " << L << normal << endl; }
-					ChunkType C;
-					this->push_back( C );
-					ChunkType& chunk( this->back() );
-					const size_t bread( chunk.read( sock, min( chunksize, want ) ) );
-					Have+=bread;
-					ndx+=bread;
-					if ( bread != chunksize ) break;
-				} 
-{ofstream progress( "progress.txt", ios::app ); progress << blue << "Done getting payload" << normal << endl;}
-//cerr << "!";
-
-			for ( typename ChunksType::iterator cit=ChunksType::begin(); cit!=this->end(); cit++ )
-			{
-				ChunkType& ch( *cit );
-				ch >> payload;
-			}
-
-//cerr << "+";
-			if ( ! headers.empty() )
-			{
-				payload.erase( 0, headers.size() +strlen( "\r\n\r\n" ) );
-				headers.clear();
-			}
-
-			ChunksType::clear();
-
+			payload.clear();
+			unsigned char* cc( (unsigned char*) malloc( want ) );
+			if ( ! cc ) return payload;
+			read( cc, want );
+			payload.append( cc, want );
+			free( cc );
 			return payload;
 		}
+
 		private:
 
-		unsigned char Next( const size_t where )
+		bool eoh()
 		{
-			const ChunksType& me( *this );
-			const size_t offset( where % chunksize );
-			const size_t bucket( where / chunksize );
-			return me[ bucket ][ offset ];
-		}
-
-		bool eomime( const size_t bread )
-		{
-			if ( ! bread ) return true;
-			for ( size_t j=0;j<bread;j++ )
-			{
-				const unsigned char C( Next( ndx++ ) );
-				if ( EoMimeMatcher( C ) )
-					return true;
-			}
+			const size_t sz( headers.size() );
+			if ( sz < 4 ) return false;
+			const string e4( headers.substr( sz-4, 4 ) );
+			if ( e4 == "\r\n\r\n" ) return true;
+			const string e2( headers.substr( sz-2, 2 ) );
+			if ( e2 == "\r\r" ) return true;
+			if ( e2 == "\n\n" ) return true;
 			return false;
 		}
+
+		bool eol( const string line )
+		{
+			const size_t sz( line.size() );
+			if ( sz < 2 ) return false;
+			const string e2( line.substr( sz-2, 2 ) );
+			if ( e2 == "\r\n" ) return true;
+			return false;
+		}
+                void read( unsigned char* bytes, const size_t much=1 )
+                {
+                        sock.read( (char*) bytes, much );
+                }
+
+
 		string headers;
 		binarystring  payload;
 		SocketType& sock;
 		Matcher EoMimeMatcher;
 		Matcher EoLineMatcher;
-		size_t ndx;
-		size_t HeaderReadLength;
 	};
 } // namespace KruncherMimes
 #endif // KRUNCHER_MIME_READER_H

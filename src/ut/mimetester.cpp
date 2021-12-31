@@ -47,14 +47,15 @@ struct IoFile : ifstream
 	virtual void flush(){ o.flush(); }
 	virtual size_t read( char* dest, const size_t size )
 	{
-		if ( ( totalread+=size )  > filesize )
+		if ( ( totalread+size )  > filesize )
 		{
 			{
 				ofstream progress( "progress.txt", ios::app ); 
 				progress << red;
+				progress << tab << "This file is " << filesize << " bytes long" << endl;
 				progress << tab << "You have already read: " << totalread << " bytes" << endl;
 				progress << tab << "But you are asking for " << size << " more bytes" << endl;
-				progress << tab << "That would be a total of " << (totalread+=size ) << " bytes " << endl;
+				progress << tab << "That would be a total of " << (totalread+size ) << " bytes " << endl;
 				progress << normal;
 			}
 			throw string( "Reading too much" );
@@ -63,7 +64,7 @@ struct IoFile : ifstream
 			progress << green;
 			progress << tab << "You have already read: " << totalread << " bytes" << endl;
 			progress << tab << "Now you are asking for " << size << " more bytes" << endl;
-			progress << tab << "For would be a total of " << (totalread+=size ) << " bytes " << endl;
+			progress << tab << "For would be a total of " << (totalread+size ) << " bytes " << endl;
 			progress << normal;
 		}
 		totalread+=size;
@@ -105,63 +106,50 @@ struct TestResult
 
 TestResult Consume( SocketManager& sock )
 {
-	if ( ! sock ) throw string("Cannot read mime");
 	const string& headers( sock.Headers() );
 	Hyper::MimeHeaders Headers( headers );
+	cerr << "Headers:" << endl << Headers << endl;
 	string TransferEncoding( Headers.TransferEncoding() );	
 
 	if ( TransferEncoding ==  "chunked") 
 	{
-		binarystring payload;
-		TestResult t( headers, 0, payload, false );
-
-		string line;
-		sock.getline( line, 512 );
-		char *Ender( NULL );
-		const size_t ChunkSize(strtol( line.c_str(), &Ender, 16 ));
-		const binarystring& Payload( sock.Payload( ChunkSize ) );
-		//cout << "Payload:" << endl << (char*) Payload.data() << endl;
-		return t;
-	}
-
-	size_t ContentLength( Headers.ContentLength() );
-
-	if ( true )
-	{
+		while ( true )
+		{
+			string line( sock.getline( 32 ) );
+			char *Ender( NULL );
+			const size_t ChunkSize(strtol( line.c_str(), &Ender, 16 ));
+			if ( ! ChunkSize ) break;
+			const binarystring& payload( sock.Payload( ChunkSize ) );
+			TestResult result( Headers, ChunkSize, payload ) ;
+			if ( result.ContentLength != payload.size() )
+			{
+				cerr << red << "Chunk Size Failed:" << (char*) payload.data() << normal << endl;
+			} else {
+				cerr << "Chunk:" << (char*) payload.data() << endl;
+			}
+		}
+		binarystring dummy;
+		TestResult result( Headers, 0, dummy ) ;
+		return result;
+	} else {
+		size_t ContentLength( Headers.ContentLength() );
 		const binarystring& payload( sock.Payload( ContentLength ) );
 		TestResult result( Headers, ContentLength, payload ) ;
 		return result;
-	} else {
-		const size_t pieces( 4 );
-		size_t piece( ContentLength / pieces );
-		size_t much( 0 );
-		while ( much < ContentLength )
-		{
-			const binarystring& part( sock.Payload( piece ) );
-			much+=piece;
-			if ( much == ContentLength )
-			{
-				TestResult result( Headers, ContentLength, part ) ;
-				return result;
-			}
-			piece=min( piece, ContentLength-much );
-		}
 	}
-	const binarystring dummy;
-	TestResult result( headers, 0, dummy ) ;
-	return result;
+	
 }
 
-template < size_t chunksize >
-	int MimeTest( const string fname, const bool expectation )
+int MimeTest( const string fname, const bool expectation )
 {
-	{ofstream progress( "progress.txt", ios::app); progress << "MimeTest<" << chunksize << ">(" << fname << " ) " << endl;}
+	cerr << fname << endl;
+	{ofstream progress( "progress.txt", ios::app); progress << "MimeTest<" << "(" << fname << " ) " << endl;}
 	const string ipath( string("tests/" ) + fname );
 	const string opath( string("tests/" ) + fname + string("out") );
 
 	//cout << teal << ipath << normal << endl;
 	IoFile io( ipath.c_str(), opath.c_str()  );
-	SocketReadWriter< IoFile, chunksize  > sock( io );
+	SocketReadWriter< IoFile > sock( io );
 	TestResult t( Consume( sock ) );
 
 	//cout << t.payload.c_str() << endl;
@@ -192,7 +180,7 @@ template < size_t chunksize >
 
 				if ( memcmp( data, t.payload.data(), t.ContentLength ) ) Same=false;
 				stringstream ssname;
-				ssname << opath << "." << chunksize;
+				ssname << opath ;
 				//ofstream o( ssname.str().c_str() );
 				//cout << compname.str() << " " << ssname.str() << endl;
 				io.write( (char*) t.payload.data(), t.ContentLength );
@@ -203,7 +191,7 @@ template < size_t chunksize >
 		
 		if ( result ) cout << green; else cout << red; 
 		if ( ! Same ) cout << bold << blue << redbk;
-		cout << setw( 24 ) << fname << fence << setw( 6 ) << chunksize << fence << setw( 6 ) << t.ContentLength << fence << setw( 6 ) << t.payload.size() << normal << endl;
+		cout << setw( 24 ) << fname << fence << setw( 6 ) << t.ContentLength << fence << setw( 6 ) << t.payload.size() << normal << endl;
 		return result;	
 	}
 	return 0;
@@ -219,7 +207,7 @@ int ShortMimeTester()
 	{
 		const string txt( it->first );
 		const bool expectation( it->second );
-		status|=MimeTest< 12 >( txt, expectation );
+		status|=MimeTest( txt, expectation );
 	}
 	if ( status ) return 0; else return 1;
 }
@@ -231,7 +219,7 @@ int MimeTester()
 	int status( 0 );
 	map< string, bool > testfiles;
 
-	//testfiles[ "chunked.txt" ] = false;
+	testfiles[ "chunked.txt" ] = false;
 	//testfiles[ "badmime.txt" ] = false;
 	testfiles[ "mimetest.txt" ] = true;
 	//testfiles[ "badbinaryheaders.txt" ] = true;
@@ -243,11 +231,7 @@ int MimeTester()
 	{
 		const string txt( it->first );
 		const bool expectation( it->second );
-		status|=MimeTest< 116 >( txt, expectation );
-		status|=MimeTest< 12 >( txt, expectation );
-		status|=MimeTest< 8192 >( txt, expectation );
-		status|=MimeTest< 4495 >( txt, expectation );
-		status|=MimeTest< 4608 >( txt, expectation );
+		status|=MimeTest( txt, expectation );
 	}
 	if ( status ) return 0; else return 1;
 }
@@ -271,11 +255,11 @@ int JournalTester()
 	{
 		const string txt( it->first );
 		const bool expectation( it->second );
-		//status|=MimeTest< 116 >( txt, expectation );
-		status|=MimeTest< 12 >( txt, expectation );
-		//status|=MimeTest< 8192 >( txt, expectation );
-		//status|=MimeTest< 4495 >( txt, expectation );
-		status|=MimeTest< 4608 >( txt, expectation );
+		//status|=MimeTest( txt, expectation );
+		status|=MimeTest( txt, expectation );
+		//status|=MimeTest( txt, expectation );
+		//status|=MimeTest( txt, expectation );
+		status|=MimeTest( txt, expectation );
 	}
 	if ( status ) return 0; else return 1;
 }
