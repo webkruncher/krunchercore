@@ -118,6 +118,8 @@ namespace KruncherMimes
 				if ( llen > 512 ) break;
 				if ( byte == '\r' ) llen=0;
 				if ( byte == '\n' ) llen=0;
+				if ( llen ) 
+					if ( ! isprint( byte ) ) break;
 			}
 			
 			return headers;
