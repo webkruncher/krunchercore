@@ -1,44 +1,19 @@
-OStag=`uname -a | cut -d ' ' -f1`
-[ ${OStag} == "Linux" ] && export OS=LINUX
-[ ${OStag} == "OpenBSD" ] && export OS=UNIX
 
-if [ "${1}" == "-testrun" ]; then
-	shift
-	cd $1
-	shift
-	#../src.build/db/datafactory ${1} --xml /home/jmt/websites/sites/webkruncher.xml  --node data --filter `hostname` 
-	exit
-fi
-
-
-if [ ${OStag} == "OpenBSD" ]; then 
-	if [ "${1}" == "-pkg_add" ]; then
-		shift
-		if [ "`id | cut -d '(' -f2 | cut -d ')' -f1`" == "root" ]; then
-			echo -ne "\033[32mInstalling packages...\033[0m\n"
-			for pkg in sudo bash vim git cmake; do
-				echo -ne "\033[35mpkg_add ${pkg}\033[0m\n"
-				pkg_add ${pkg}
-			done;
-		else
-			echo -ne "\033[31mpkg_add must be run as root\033[0m\n"
-			exit
-		fi
-	fi
-fi
-
-
-
+. ../../krunchercore/Builder.ksh
 echo -ne "\033[32mBuilding krunchercore\033[0m\n"
-mkdir -p ../src.build
+
+[ -f ../src.build/ut/krunchercoreut ] && rm ../src.build/ut/krunchercoreut 
+
+Build
 
 
-cmake -S .  -B  ../src.build
-[ $? != 0 ] && exit -1
-cmake  --build ../src.build/ 
-[ $? != 0 ] && exit -1
+[ ! -f ../src.build/ut/krunchercoreut ] && ( echo -ne "\033[31mBuild failed\033[0m\n" ; exit 0 )
+
+
+[ ! -L ./krunchercoreut ] && ln -s ../src.build/ut/krunchercoreut 
+
+
 if [ "${1}" == "-test" ]; then 
-	#pushd ../src.build/ut
 	./krunchercoreut
 	if [ $? != 0 ]; then
 		echo -ne "\033[31mTest failed\033[0m\n"  
@@ -46,10 +21,7 @@ if [ "${1}" == "-test" ]; then
 	else
 		echo -ne "\033[32mTest succeeded\033[0m\n"
 	fi
-	#popd
 fi
-
-[ "${1}" == "-install" ] &&  sudo cmake --install ../src.build
 
 
 exit 0

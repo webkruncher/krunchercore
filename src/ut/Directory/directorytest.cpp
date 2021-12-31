@@ -87,7 +87,7 @@ namespace DirectoryTester
 		if ( regcomp( &rx, exp.c_str(), REG_EXTENDED ) ) throw exp;
 		Dir dir( path, true, rx );
 		if ( ! dir ) return -1;
-		cerr << dir ;
+		//cerr << dir ;
 		return 0;
 	}
 } // DirectoryTester

@@ -52,9 +52,9 @@ int main(int argc, char** argv)
 	try
 	{
 		Tests tests;
-		//tests[  "Directory.simple" ] = DirectoryTester::FilteredDirectoryListing( "/home/jmt/websites" );
-		//tests[  "Mimes" ] = MimeTester();
-		tests[  "Journals" ] = JournalTester();
+		tests[  "Directory.simple" ] = DirectoryTester::FilteredDirectoryListing( "/home/jmt/websites" );
+		tests[  "Mimes" ] = MimeTester();
+		//tests[  "Journals" ] = JournalTester();
 		return tests();
 	}
 	catch( const exception& e ) { ssexcept<<e.what(); }

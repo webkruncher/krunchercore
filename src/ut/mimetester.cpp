@@ -38,18 +38,37 @@ using namespace KruncherMimes;
 struct IoFile : ifstream 
 {
 	IoFile( const string in, const string out )
-		: ifstream( in.c_str(), std::ifstream::in ), o( out.c_str() ) 
+		: ifstream( in.c_str(), std::ifstream::in ), o( out.c_str() ), totalread( 0 ) 
 	{
-		cout << in << endl;
+		filesize=FileSize( in );
+		{ofstream progress( "progress.txt", ios::app ); progress << in << ":" << filesize << " bytes" << endl; }
 	}
 	virtual ~IoFile(){}
 	virtual void flush(){ o.flush(); }
 	virtual size_t read( char* dest, const size_t size )
 	{
-		//if ( ifstream::fail() ) throw string( "IoFile failed before read") ;
+		if ( ( totalread+=size )  > filesize )
+		{
+			{
+				ofstream progress( "progress.txt", ios::app ); 
+				progress << red;
+				progress << tab << "You have already read: " << totalread << " bytes" << endl;
+				progress << tab << "But you are asking for " << size << " more bytes" << endl;
+				progress << tab << "That would be a total of " << (totalread+=size ) << " bytes " << endl;
+				progress << normal;
+			}
+			throw string( "Reading too much" );
+		} else {
+			ofstream progress( "progress.txt", ios::app ); 
+			progress << green;
+			progress << tab << "You have already read: " << totalread << " bytes" << endl;
+			progress << tab << "Now you are asking for " << size << " more bytes" << endl;
+			progress << tab << "For would be a total of " << (totalread+=size ) << " bytes " << endl;
+			progress << normal;
+		}
+		totalread+=size;
+		{ofstream progress( "progress.txt", ios::app ); progress << size << " / " << totalread << endl; }
 		ifstream::read( dest, size ); 
-		//if ( ifstream::fail() ) throw string( "IoFile failed after read") ;
-		//if ( ifstream::fail() ) cout << "!";
 		return size;
 	}
 	virtual size_t write( char* dest, const size_t size )
@@ -58,6 +77,8 @@ struct IoFile : ifstream
 		return size;
 	}
 	private:
+	unsigned long filesize;
+	unsigned long totalread;
 	ofstream o;
 };
 
@@ -105,7 +126,7 @@ TestResult Consume( SocketManager& sock )
 
 	size_t ContentLength( Headers.ContentLength() );
 
-	if ( false )
+	if ( true )
 	{
 		const binarystring& payload( sock.Payload( ContentLength ) );
 		TestResult result( Headers, ContentLength, payload ) ;
@@ -134,6 +155,7 @@ TestResult Consume( SocketManager& sock )
 template < size_t chunksize >
 	int MimeTest( const string fname, const bool expectation )
 {
+	{ofstream progress( "progress.txt", ios::app); progress << "MimeTest<" << chunksize << ">(" << fname << " ) " << endl;}
 	const string ipath( string("tests/" ) + fname );
 	const string opath( string("tests/" ) + fname + string("out") );
 
@@ -204,15 +226,16 @@ int ShortMimeTester()
 
 int MimeTester()
 {
+	{ofstream progress( "progress.txt"); progress << "WIP" << endl;}
 	//return ShortMimeTester();
 	int status( 0 );
 	map< string, bool > testfiles;
 
-	testfiles[ "chunked.txt" ] = false;
-	testfiles[ "badmime.txt" ] = false;
+	//testfiles[ "chunked.txt" ] = false;
+	//testfiles[ "badmime.txt" ] = false;
 	testfiles[ "mimetest.txt" ] = true;
-	testfiles[ "badbinaryheaders.txt" ] = true;
-	testfiles[ "binarypayload.txt" ] = true;
+	//testfiles[ "badbinaryheaders.txt" ] = true;
+	//testfiles[ "binarypayload.txt" ] = true;
 
 	testfiles[ "shortpayload.txt" ] = true;
 

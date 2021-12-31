@@ -151,6 +151,7 @@ namespace KruncherMimes
 		virtual void write( const unsigned char* data, size_t datalen)
 			{ sock.write( (char*) data, datalen ); }
 
+
 		virtual void getline( string& line, const size_t maxlen )
 		{
 			const binarystring& SoPayload( Payload( 16 ) );
@@ -168,6 +169,7 @@ namespace KruncherMimes
 		} 
 
 		virtual void getline( binarystring& line, const size_t maxlen) {}
+
 
 		operator bool ()
 		{
@@ -211,20 +213,26 @@ namespace KruncherMimes
 			return headers;
 		}
 
-		const binarystring& Payload( const size_t len )
+		const binarystring& Payload( const size_t want )
 		{
-			const size_t L( payload.size() + len + HeaderReadLength );
-			// Needs work...
-			//if ( (L-ndx) != len )
-				while ( ndx < L )
+{ofstream progress( "progress.txt", ios::app ); progress << blue << "Getting payload" << normal << endl;}
+			size_t Have( HeaderReadLength );
+			size_t Want( Have + want );
+//cerr << ".";
+				while ( Have < Want )
 				{
+//cerr << "-" << ndx << "<" << L << ";";
+{ofstream progress( "progress.txt", ios::app ); progress << blue << ndx << " / " << L << normal << endl; }
 					ChunkType C;
 					this->push_back( C );
 					ChunkType& chunk( this->back() );
-					const size_t bread( chunk.read( sock, L-ndx ) );
+					const size_t bread( chunk.read( sock, min( chunksize, want ) ) );
+					Have+=bread;
 					ndx+=bread;
 					if ( bread != chunksize ) break;
 				} 
+{ofstream progress( "progress.txt", ios::app ); progress << blue << "Done getting payload" << normal << endl;}
+//cerr << "!";
 
 			for ( typename ChunksType::iterator cit=ChunksType::begin(); cit!=this->end(); cit++ )
 			{
@@ -232,6 +240,7 @@ namespace KruncherMimes
 				ch >> payload;
 			}
 
+//cerr << "+";
 			if ( ! headers.empty() )
 			{
 				payload.erase( 0, headers.size() +strlen( "\r\n\r\n" ) );
