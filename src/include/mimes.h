@@ -105,12 +105,19 @@ namespace KruncherMimes
 			headers.clear();
 			headers.reserve( 512 );
 			size_t len( 0 );
+			size_t llen( 0 );
 			while ( true )
 			{
 				unsigned char byte;	
 				read( &byte );
 				headers.append( (char*) &byte, 1 );
 				if ( eoh() ) break;
+				len++;
+				llen++;
+				if ( len > 4096  ) break;
+				if ( llen > 512 ) break;
+				if ( byte == '\r' ) llen=0;
+				if ( byte == '\n' ) llen=0;
 			}
 			
 			return headers;
