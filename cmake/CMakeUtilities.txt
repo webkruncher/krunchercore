@@ -45,6 +45,6 @@ endfunction()
  
 
 if(DEFINED ENV{KRUNCHER_DEV_VERBOSE})
-	message( ${Bold} ${YellowColor} ${BlueBkColor} "Under Construction" ${NormalColor})
+	#message( ${Bold} ${YellowColor} ${BlueBkColor} "Under Construction" ${NormalColor})
 endif()
 
