@@ -308,17 +308,25 @@ namespace KruncherTools
 
 	struct Args : map< string, string >
 	{
+		Args() {}
 		Args( int _argc, char** _argv ) : argc( _argc ), argv( _argv ) {}
 		Args( const Args& that ) : argc( that.argc ), argv( that.argv )
 		{
 			for ( const_iterator it=that.begin();it!=that.end();it++) insert( *it );
 		} 
+		bool operator()( int _argc, char** _argv )
+		{
+			argc=_argc;
+			argv=_argv;
+			Args& me( *this );
+			return !!me;
+		}
 		string svalue( const string& shortname, const string& longname, const string& defval ) const;
 		int ivalue( const string& shortname, const string& longname, const int& defval ) const;
 		virtual operator bool ();
 		protected:
 		virtual ostream& operator<<(ostream& o) const;
-		const int argc;
+		int argc;
 		char** argv;
 		friend ostream& operator<<(ostream&,const Args&);
 	}; 
