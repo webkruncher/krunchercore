@@ -81,7 +81,9 @@ namespace Hyper
 			return strtol( it->second.c_str(), &Ender, 10 );
 		}
 		const string Method() const { return method; }
+		const string ServerScheme() const { return method; }
 		const string Resource() const { return resource; }
+		const string ServerStatus() const { return resource; }
 		private:
 		string method, resource;
 		string transferencoding;
