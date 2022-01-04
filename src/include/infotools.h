@@ -1007,6 +1007,8 @@ namespace KruncherTools
 	    rtrim(s);
 	}
 
+	inline bool isEmpty(const std::string &s) { return s.empty(); }
+
 
 
 	inline string Slice( const string& txt, const pair<size_t,size_t>& pos ) { return txt.substr( pos.first, pos.second-pos.first ); }
