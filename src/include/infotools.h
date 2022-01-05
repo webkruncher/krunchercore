@@ -215,6 +215,18 @@ namespace KruncherTools
 
 	struct stringvector : vector<string> 
 	{
+		stringvector( ) {}
+#if 0
+		stringvector( const stringvector& that )
+		{
+			cerr << red << "+++" << normal << endl;
+		}
+		stringvector& operator=( const stringvector& that )
+		{
+			cerr << red << "===" << normal << endl;
+			return *this;
+		}
+#endif
 
 		virtual void split( string what ) { return split( what, "|" ); }
 
