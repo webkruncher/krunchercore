@@ -55,6 +55,10 @@ function(TraceList)
 	endif()
 endfunction()
 
+function(Banner)
+	message( "${BlueBkColor} Building in ${CMAKE_CURRENT_LIST_DIR} ${NormalColor} ")
+endfunction() 
+
 function(Headers)
 	set(INCLUDE_PATHS PARENT_SCOPE )
 	foreach(arg IN LISTS ARGN)

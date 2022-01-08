@@ -1,4 +1,5 @@
 
+Banner()
 get_filename_component(INCLUDES_PATH ../include/ REALPATH) 
 
 add_library(

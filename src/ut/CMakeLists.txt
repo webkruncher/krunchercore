@@ -1,4 +1,5 @@
 
+Banner()
 add_subdirectory( Directory )
 
 get_filename_component(INCLUDES_PATH ../include/ REALPATH) 
