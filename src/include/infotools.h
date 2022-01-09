@@ -59,6 +59,11 @@
 #include <stdio.h>
 
 extern volatile bool TERMINATE;
+inline void SetExitFlag()
+{ 
+	std::cerr << "Setting exit flag" << std::endl;
+	TERMINATE=true; 
+}
 extern unsigned long VERBOSITY;
 
 #define VERB_EVERYTHING 	0XFFFFFFFFFFFF
