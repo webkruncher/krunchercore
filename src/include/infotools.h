@@ -1038,6 +1038,20 @@ namespace KruncherTools
 		return a;
 	}
 
+	inline string TimeFormat( struct tm* tim )
+	{
+		if ( ! tim ) return string("");
+		stringstream ss;
+		ss << 
+			setw( 4 ) << setfill( '0' ) << tim->tm_year+1900 << "-" <<
+			setw( 2 ) << setfill( '0' ) << tim->tm_mon+1 << "-" <<
+			setw( 2 ) << setfill( '0' ) << tim->tm_mday << "T" <<
+			setw( 2 ) << setfill( '0' ) << tim->tm_hour << ":" <<
+			setw( 2 ) << setfill( '0' ) << tim->tm_min << ":" <<
+			setw( 2 ) << setfill( '0' ) << tim->tm_sec << "Z"; 
+		string s( ss.str() );
+		return s;
+	};
 
 } // KruncherTools
 
