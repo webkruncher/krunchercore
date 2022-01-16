@@ -1025,6 +1025,7 @@ namespace KruncherTools
 	}
 
 	inline bool isEmpty(const std::string &s) { return s.empty(); }
+	inline bool SizeOf(const std::string &s) { return s.size(); }
 
 
 
@@ -1032,9 +1033,10 @@ namespace KruncherTools
 
 	inline string& assign( string& a, const string& s )
 	{
-		a = s;
+		a.assign(s);
 		return a;
 	}
+
 
 } // KruncherTools
 
