@@ -1025,7 +1025,8 @@ namespace KruncherTools
 	}
 
 	inline bool isEmpty(const std::string &s) { return s.empty(); }
-	inline bool SizeOf(const std::string &s) { return s.size(); }
+	inline size_t SizeOf(const std::string &s) { return s.size(); }
+	inline void* DataOf(const std::string &s) { return (void*) s.c_str(); }
 
 
 
