@@ -92,6 +92,7 @@ namespace KruncherMimes
 			{
 				unsigned char byte;	
 				read( &byte );
+				if ( byte == 0 ) break;
 				line.append( (char*) &byte, 1 );
 				if ( line.size() > limit ) break;
 				if ( eol( line ) ) break;
