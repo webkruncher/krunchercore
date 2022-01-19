@@ -1053,6 +1053,19 @@ namespace KruncherTools
 		return s;
 	};
 
+	inline string DeBrace( const string what )
+	{
+		const size_t openbracket( what.find( "{" ) );
+		if ( openbracket == string::npos ) return what;
+		const size_t closebracket( what.find( "}", openbracket ) );
+		if ( closebracket == string::npos ) return what;
+		if ( openbracket == string::npos ) return what;
+		const string a( what.substr( 0, openbracket ) );
+		const string b( what.substr( closebracket+1, what.size()-1 ) );
+				       
+		return a + string( "*" ) + b;
+	}
+
 } // KruncherTools
 
 
