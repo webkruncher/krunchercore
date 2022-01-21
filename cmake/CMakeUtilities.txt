@@ -13,6 +13,7 @@
     set(GreenColor "${Esc}[32m")
     set(YellowBkColor "${Esc}[43m")
     set(YellowColor "${Esc}[33m")
+    set(MagentaColor "${Esc}[35m")
     set(Bold "${Esc}[1m")
 
  
