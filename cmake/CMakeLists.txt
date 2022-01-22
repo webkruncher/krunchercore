@@ -69,7 +69,9 @@ function(TraceListAlways)
 endfunction()
 
 function(Banner)
-	message( "${BlueBkColor} Building in ${CMAKE_CURRENT_LIST_DIR} ${NormalColor} ")
+	if(DEFINED ENV{KRUNCHER_DEV_VERBOSE})
+		message( "${BlueBkColor} Building in ${CMAKE_CURRENT_LIST_DIR} ${NormalColor} ")
+	endif()
 endfunction() 
 
 function(Headers)

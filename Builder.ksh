@@ -32,6 +32,7 @@ function Clean
 
 function Build
 {
+	[ -f prebuild ] && ./prebuild
 	if [ "${1}" == "-clean" ]; then
 		Clean
 		shift
@@ -40,12 +41,15 @@ function Build
 	mkdir -p ../src.build
 	cmake -S .  -B  ../src.build
 	cmake  --build ../src.build/ 
+	[ "$?" != "0" ] && return 1
 
 
 	if [ "${1}" == "-install" ]; then 
 		Install
 		shift
 	fi
+	[ -f postbuild ] && ./postbuild
+	return 0
 }
 
 
