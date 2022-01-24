@@ -97,6 +97,8 @@ namespace KruncherMimes
 				if ( line.size() > limit ) break;
 				if ( eol( line ) ) break;
 			}
+
+			//Log( VERB_ALWAYS, "mimes/getline", line );
 			
 			return line;
 		}
