@@ -74,6 +74,9 @@ extern unsigned long VERBOSITY;
 #define VERB_PSOCKETS 		0X100
 #define VERB_SSOCKETS 		0X200
 #define VERB_ASOCKETS 		(VERB_SSOCKETS|VERB_PSOCKETS)
+#define VERB_REST_1		0X10
+#define VERB_REST_2		0X11
+#define VERB_REST_3		0X13
 
 namespace KruncherTools
 {
