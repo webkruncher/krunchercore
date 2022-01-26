@@ -78,6 +78,9 @@ extern unsigned long VERBOSITY;
 #define VERB_REST_1		0X10
 #define VERB_REST_2		0X11
 #define VERB_REST_3		0X13
+#define VERB_CURSOR_1		0X20
+#define VERB_CURSOR_2		0X21
+#define VERB_CURSOR_3		0X23
 
 namespace KruncherTools
 {
@@ -1031,8 +1034,11 @@ namespace KruncherTools
 	}
 
 	inline bool isEmpty(const std::string &s) { return s.empty(); }
-	inline size_t SizeOf(const std::string &s) { return s.size(); }
-	inline void* DataOf(const std::string &s) { return (void*) s.c_str(); }
+	inline size_t StartKeySize(const std::string &s) { return s.size(); }
+	inline void* StartKeyStr(const std::string &s) { return (void*) s.c_str(); }
+	inline size_t EndKeySize(const std::string &s) { return 0; }
+	inline void* EndKeyStr(const std::string &s) { return (void*) nullptr; }
+	inline string StringOf(const std::string &s) {  return s; }
 
 
 
