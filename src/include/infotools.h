@@ -76,13 +76,13 @@ extern unsigned long VERBOSITY;
 #define VERB_SSOCKETS 		0X200
 #define VERB_ASOCKETS 		(VERB_SSOCKETS|VERB_PSOCKETS)
 
-#define VERB_REST_1		0X10
-#define VERB_REST_2		0X11
-#define VERB_REST_3		0X13
+#define VERB_REST_1		0X1
+#define VERB_REST_2		0X2
+#define VERB_REST_3		0X4
 
-#define VERB_CURSOR_1		0X200
-#define VERB_CURSOR_2		0X210
-#define VERB_CURSOR_3		0X230
+#define VERB_CURSOR_1		0X10
+#define VERB_CURSOR_2		0X20
+#define VERB_CURSOR_3		0X40
 
 namespace KruncherTools
 {
@@ -1037,10 +1037,11 @@ namespace KruncherTools
 
 	inline bool isEmpty(const std::string &s) { return s.empty(); }
 	inline size_t StartKeySize(const std::string &s) { return s.size(); }
-	inline void* StartKeyStr(const std::string &s) { return (void*) s.c_str(); }
+	inline void* StartKeyDataPtr(const std::string &s) { return (void*) s.c_str(); }
 	inline size_t EndKeySize(const std::string &s) { return 0; }
 	inline void* EndKeyStr(const std::string &s) { return (void*) nullptr; }
 	inline string StringOf(const std::string &s) {  return s; }
+	inline string StringOfPtr(const void* start, const size_t sz) {  return string( "DUMMY" ); }
 
 
 
