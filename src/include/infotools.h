@@ -1041,7 +1041,12 @@ namespace KruncherTools
 	inline size_t EndKeySize(const std::string &s) { return 0; }
 	inline void* EndKeyStr(const std::string &s) { return (void*) nullptr; }
 	inline string StringOf(const std::string &s) {  return s; }
-	inline string StringOfPtr(const void* start, const size_t sz) {  return string( "DUMMY" ); }
+	inline string StringOfPtr(const void* start, const size_t sz) 
+	{
+		string ret;
+		if ( ( start ) && ( sz ) ) ret.assign( (char*) start, sz );
+		return ret;
+	}
 
 
 
