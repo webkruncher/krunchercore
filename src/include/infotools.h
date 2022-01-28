@@ -1035,19 +1035,28 @@ namespace KruncherTools
 	    rtrim(s);
 	}
 
-	inline bool isEmpty(const std::string &s) { return s.empty(); }
-	inline size_t StartKeySize(const std::string &s) { return s.size(); }
-	inline void* StartKeyDataPtr(const std::string &s) { return (void*) s.c_str(); }
-	inline size_t EndKeySize(const std::string &s) { return 0; }
-	inline void* EndKeyStr(const std::string &s) { return (void*) nullptr; }
-	inline string StringOf(const std::string &s) {  return s; }
+	inline bool isEmpty(const std::string &s) //{ return s.empty(); }
+{Log( VERB_ALWAYS, ">>isEmpty", s ); return s.empty(); }
+	inline size_t StartKeySize(const std::string &s) //{ return s.size(); }
+{Log( VERB_ALWAYS, ">>StartKeySize", s ); return s.size(); }
+	inline void* StartKeyDataPtr(const std::string &s) //{ return (void*) s.c_str(); }
+{Log( VERB_ALWAYS, ">>StartKeyDataPtr", s ); return (void*) s.c_str(); }
+	inline size_t EndKeySize(const std::string &s) //{ return 0; }
+{Log( VERB_ALWAYS, ">>EndKeySize", s ); return 0; }
+	inline void* EndKeyStr(const std::string &s) //{ return (void*) nullptr; }
+{Log( VERB_ALWAYS, ">>EndKeyStr", s ); return nullptr; }
+	inline string StringOf(const std::string &s) //{  return s; }
+{Log( VERB_ALWAYS, ">>StringOf", s ); return s; }
 	inline string StringOfPtr(const void* start, const size_t sz) 
 	{
+{Log( VERB_ALWAYS, ">>StringOfPtr", (char*) start ); }
 		string ret;
 		if ( ( start ) && ( sz ) ) ret.assign( (char*) start, sz );
 		return ret;
 	}
 
+	inline string StartKeyOf(const std::string &s) {  return s; }
+	inline string EndKeyKeyOf(const std::string &s) {  return s; }
 
 
 	inline string Slice( const string& txt, const pair<size_t,size_t>& pos ) { return txt.substr( pos.first, pos.second-pos.first ); }
