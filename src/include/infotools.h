@@ -1056,6 +1056,7 @@ namespace KruncherTools
 	inline string StartKeyOf(const std::string &s) {  return s; }
 	inline string EndKeyKeyOf(const std::string &s) {  return s; }
 	inline int KeyLimmitter(const std::string &s) {  return 0; }
+	inline int KeySkipper(const std::string &s) { return 0; }
 
 
 	inline string Slice( const string& txt, const pair<size_t,size_t>& pos ) { return txt.substr( pos.first, pos.second-pos.first ); }
