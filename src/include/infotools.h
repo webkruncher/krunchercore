@@ -84,6 +84,10 @@ extern unsigned long VERBOSITY;
 #define VERB_CURSOR_2		0X20
 #define VERB_CURSOR_3		0X40
 
+#define VERB_KREST_1		0X10000
+#define VERB_KREST_2		0X20000
+#define VERB_KREST_3		0X40000
+
 namespace KruncherTools
 {
 	using namespace std;
