@@ -1099,6 +1099,30 @@ namespace KruncherTools
 		return a + string( "*" ) + b;
 	}
 
+	inline vector<char*> Defaults( int argc, char** argv, vector<char*>& defaults )
+	{
+		vector< char* > args;
+		for ( int j=0;j<argc;j++) args.push_back( argv[ j ] );
+		for (vector<char*>::iterator ait=defaults.begin();ait!=defaults.end();ait++)
+		{
+			const string a( *ait );
+			if ( a.empty() ) continue;
+			if ( a[ 0 ] == '-' )
+			{
+				if ( find( args.begin(), args.end(), a ) == args.end() )
+				{
+					args.push_back( *ait );
+					ait++;
+					if ( ait==args.end() ) break;
+					const string v( *ait );
+					if ( v.empty() ) break;
+					if ( v[ 0 ] == '-' ) continue;
+					args.push_back( *ait );
+				}
+			}
+		}
+		return args;
+	}
 } // KruncherTools
 
 
