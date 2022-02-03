@@ -1099,11 +1099,27 @@ namespace KruncherTools
 		return a + string( "*" ) + b;
 	}
 
-	inline vector<char*> Defaults( int argc, char** argv, vector<char*>& defaults )
+
+	typedef vector<char*> CharVector;
+
+	struct CmdArguments : CharVector
 	{
-		vector< char* > args;
+		bool exists( const string what )
+		{
+			return (find( begin(), end(), what ) == end() );
+		}
+		void operator()( const string& name, const string& value )
+		{
+			push_back( (char*) name.c_str() );
+			push_back( (char*) value.c_str() );
+		}
+	};
+
+	inline CmdArguments Defaults( int argc, char** argv, CharVector& defaults )
+	{
+		CmdArguments args;
 		for ( int j=0;j<argc;j++) args.push_back( argv[ j ] );
-		for (vector<char*>::iterator ait=defaults.begin();ait!=defaults.end();ait++)
+		for (CharVector::iterator ait=defaults.begin();ait!=defaults.end();ait++)
 		{
 			const string a( *ait );
 			if ( a.empty() ) continue;
@@ -1123,6 +1139,8 @@ namespace KruncherTools
 		}
 		return args;
 	}
+
+
 } // KruncherTools
 
 
