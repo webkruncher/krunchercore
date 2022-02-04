@@ -670,70 +670,6 @@ namespace KruncherTools
 	}
 
 
-	inline string forkpipe( const string exe, const string input )
-	{
-#define MAX_RESULT_BUFFER 4069
-		int fd1[2];
-		int fd2[2];
-		pid_t pid;
-		char line[ MAX_RESULT_BUFFER ];
-		if ( input.empty() ) return "";
-
-		if ( (pipe(fd1) < 0) || (pipe(fd2) < 0) ) return "";
-		if ( (pid = fork()) < 0 ) return "";
-
-		else  if (pid == 0)     
-		{
-			// Child
-			close(fd1[1]);
-			close(fd2[0]);
-
-			if (fd1[0] != STDIN_FILENO)
-			{
-				if (dup2(fd1[0], STDIN_FILENO) != STDIN_FILENO) return "";
-				close(fd1[0]);
-			}
-
-			if (fd2[1] != STDOUT_FILENO)
-			{
-				if (dup2(fd2[1], STDOUT_FILENO) != STDOUT_FILENO) return "";
-				close(fd2[1]);
-			}
-
-			throw string("BRIDGE OUT - execl");
-			//if ( execl( exe.c_str(),  (char *)0) < 0 ) return ""; 
-			return 0;
-		} else {
-			// Parent
-			int rv;
-			close(fd1[0]);
-			close(fd2[1]); 
-
-			Log( "Writing to ksh") ;
-			Log( input );
-
-			if ( (size_t) write(fd1[1], input.c_str(), input.size() ) != (size_t) input.size() ) return "";
-
-			memset( line, 0, MAX_RESULT_BUFFER );
-			if ( (rv = read(fd2[0], line, MAX_RESULT_BUFFER )) < 0 ) 
-			{
-				Log( "Read from script returned < 0 " );
-				return "";
-			} else { 
-				if (rv == 0) 
-				{
-					Log( "Read from script returned 0 " );
-					return "";
-				}
-			}
-
-			Log( exe + string( " completed successfully with: "));
-			Log( line );
-
-			return line;
-		}
-		return "";
-	} 
 
 	inline void ExceptionLog( const string what, const string details )
 	{
@@ -1140,6 +1076,62 @@ namespace KruncherTools
 		return args;
 	}
 
+	inline void forkpipe( const string exe, const KruncherTools::CharVector& args, const string input, ostream& out )
+	{
+		#define MAX_RESULT_BUFFER 4069
+		int fd1[2];
+		int fd2[2];
+		pid_t pid;
+		char line[ MAX_RESULT_BUFFER ];
+
+		if ( (pipe(fd1) < 0) || (pipe(fd2) < 0) ) return ;
+		if ( (pid = fork()) < 0 ) return ;
+
+		else  if (pid == 0)     
+		{
+			// Child
+			close(fd1[1]);
+			close(fd2[0]);
+
+			if (fd1[0] != STDIN_FILENO)
+			{
+				if (dup2(fd1[0], STDIN_FILENO) != STDIN_FILENO) return ;
+				close(fd1[0]);
+			}
+
+			if (fd2[1] != STDOUT_FILENO)
+			{
+				if (dup2(fd2[1], STDOUT_FILENO) != STDOUT_FILENO) return ;
+				close(fd2[1]);
+			}
+
+
+			if ( execvp( (const char*) exe.c_str(),  &args[0] ) < 0 ) return ; 
+
+		} else {
+			// Parent
+			int rv;
+			close(fd1[0]);
+			close(fd2[1]); 
+
+			if ( ! input.empty() )
+			{
+				if ( (size_t) write(fd1[1], input.c_str(), input.size() ) != (size_t) input.size() ) return ;
+				close( fd1[1] );
+				wait(NULL);
+			} 
+
+
+			while ( true )
+			{
+				memset( line, 0, MAX_RESULT_BUFFER );
+				rv = read(fd2[0], line, MAX_RESULT_BUFFER );
+				if ( rv <= 0 ) break;
+				out << line;
+			}
+
+		}
+	} 
 
 } // KruncherTools
 
