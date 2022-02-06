@@ -1047,6 +1047,7 @@ namespace KruncherTools
 			parts.split( what, " " );
 			for ( stringvector::const_iterator it=parts.begin();it!=parts.end();it++)
 				push_back( (char*) it->c_str() );
+			push_back( nullptr );
 		}
 		bool exists( const string what )
 		{
