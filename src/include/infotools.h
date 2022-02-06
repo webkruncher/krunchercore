@@ -1040,6 +1040,14 @@ namespace KruncherTools
 
 	struct CmdArguments : CharVector
 	{
+		CmdArguments() {}
+		CmdArguments( const string& what )
+		{
+			stringvector parts;
+			parts.split( what, " " );
+			for ( stringvector::const_iterator it=parts.begin();it!=parts.end();it++)
+				push_back( (char*) it->c_str() );
+		}
 		bool exists( const string what )
 		{
 			return (find( begin(), end(), what ) == end() );
@@ -1048,6 +1056,13 @@ namespace KruncherTools
 		{
 			push_back( (char*) name.c_str() );
 			push_back( (char*) value.c_str() );
+		}
+		void operator=( const string& what )
+		{
+			stringvector parts;
+			parts.split( what, " " );
+			for ( stringvector::const_iterator it=parts.begin();it!=parts.end();it++)
+				push_back( (char*) it->c_str() );
 		}
 	};
 
