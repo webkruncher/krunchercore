@@ -154,6 +154,7 @@ namespace KruncherTools
 	inline ostream& Endl( ostream& o ) { o << "\r\n"; return o; }
 
 
+	inline ostream& scope( ostream& o ) { o << "::"; return o; }
 	inline ostream& fence( ostream& o ) { o << "|"; return o; }
 	inline ostream& colon( ostream& o ) { o << ":"; return o; }
 	inline ostream& clrscr( ostream& o ) { o << "\033[2J"; return o; }

@@ -142,6 +142,9 @@ namespace KruncherDirectory
 
 	inline bool FileExists( const string filename )
 	{
+		if ( filename.empty() ) return false;
+		if ( filename[ filename.size()-1 ] == '/' ) return false;
+		Log( VERB_ALWAYS, "FileExists", filename );
 		struct stat sb;
 		return ( stat( filename.c_str(), &sb ) == 0 );
 	}
@@ -195,9 +198,9 @@ namespace KruncherDirectory
 	inline void LoadBinaryFile(const string& filename, unsigned char* dest, size_t len )
 	{
 		ifstream in(filename.c_str());
-		if ( in.fail() ) throw string("Cannot read file:" ) + filename;
+		if ( in.fail() ) throw string("Cannot read binary file:" ) + filename;
 		in.read( (char*) dest, len );
-		if ( in.fail() ) throw string("Cannot read file:" ) + filename;
+		if ( in.fail() ) throw string("Cannot read binary file:" ) + filename;
 	}
 
 
