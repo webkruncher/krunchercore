@@ -50,7 +50,7 @@ namespace KruncherDirectory
 		return S_ISDIR(sb.st_mode);
 	}
 
-	struct Directory : stringvector
+	struct Directory : stringset
 	{
 		Directory() : recurse( false ) {}
 		Directory( const string& _where ) : where( _where ), recurse( false ) {}
@@ -69,6 +69,7 @@ namespace KruncherDirectory
 		}
 		void operator()( const mode_t mode=0777 )
 		{
+#if 0
 			split( where, "/" );
 			if ( empty() ) return;
 			string& start( *begin() );
@@ -83,13 +84,14 @@ namespace KruncherDirectory
 				mkdir( sspath.str().c_str(), mode );
 				
 			}
+#endif
 		}
 		virtual operator bool ();
-		const stringvector& Directories() { return directories; }
+		const stringset& Directories() { return directories; }
 		protected:
 		mutable string where;
 		mutable bool recurse;
-		stringvector directories;
+		stringset directories;
 		private:
 		virtual Directory& NewSub( const string _where, const bool _recurse ) 
 			{ throw string("No NewSub implemented for Directory" ); return *this;}
@@ -99,7 +101,7 @@ namespace KruncherDirectory
 		virtual ostream& operator<<(ostream& o) const
 		{
 			o << "[directories]" << endl << directories ;
-			const stringvector& me( *this );
+			const stringset& me( *this );
 			o << "[files]"  << endl << me;
 			return o;
 		}
@@ -111,10 +113,10 @@ namespace KruncherDirectory
 	{
 		if ( Filter( ent ) ) return;
 		if ( ent.d_type == DT_DIR )
-			directories.push_back( ent.d_name );
+			directories.insert( ent.d_name );
 		else
 			if ( ent.d_type == DT_REG )
-				push_back( ent.d_name );
+				insert( ent.d_name );
 	}
 
 	inline Directory::operator bool ()
@@ -127,7 +129,7 @@ namespace KruncherDirectory
 		while ((pDirent = readdir(pDir)) != NULL) D+=*pDirent;
 		closedir (pDir);
 
-		for ( stringvector::const_iterator dit=directories.begin();dit!=directories.end();dit++)
+		for ( stringset::const_iterator dit=directories.begin();dit!=directories.end();dit++)
 		{
 			const string name( *dit );
 			if ( name == "." ) continue;

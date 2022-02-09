@@ -80,7 +80,7 @@ namespace DirectoryTester
 		return subs.back();
 	}
 
-	int FilteredDirectoryListing( const string path )
+	inline int FilteredDirectoryListing( const string path )
 	{
 		regex_t rx;
 		const string exp( "^.*\\.js$|^.*\\.xml$" );
