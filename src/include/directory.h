@@ -146,9 +146,13 @@ namespace KruncherDirectory
 	{
 		if ( filename.empty() ) return false;
 		if ( filename[ filename.size()-1 ] == '/' ) return false;
-		Log( VERB_ALWAYS, "FileExists", filename );
 		struct stat sb;
-		return ( stat( filename.c_str(), &sb ) == 0 );
+		const bool ret( stat( filename.c_str(), &sb ) == 0 );
+		if ( ret ) 
+			Log( VERB_ALWAYS, "FileExists", filename );
+		else
+			Log( VERB_ALWAYS, "FileNotFound", filename );
+		return ret;
 	}
 
 
