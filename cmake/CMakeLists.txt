@@ -8,6 +8,8 @@ add_compile_options(-ggdb  -gdwarf-2  )
 #set(CMAKE_CXX_COMPILER "clang++")
 
 
+add_definitions( -DXML_BASE=KruncherTools::XmlBase )
+
 IF(CMAKE_SYSTEM_NAME STREQUAL OpenBSD)
 	#add_definitions( -DUNIX -Wall )
 	#add_definitions( -DUNIX )
