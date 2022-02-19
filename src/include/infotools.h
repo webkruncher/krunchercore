@@ -1145,10 +1145,7 @@ namespace KruncherTools
 		}
 	} 
 
-	struct PropertiesBase
-	{
-		PropertiesBase(){}
-	};
+	struct PropertiesBase {};
 
 } // KruncherTools
 
