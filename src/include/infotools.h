@@ -1147,10 +1147,7 @@ namespace KruncherTools
 
 	struct XmlBase
 	{
-		XmlBase()
-		{
-			cerr << "\033[32mXmlBase\033[0m\n";
-		}
+		XmlBase(){}
 	};
 
 } // KruncherTools
