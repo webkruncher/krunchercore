@@ -1145,9 +1145,9 @@ namespace KruncherTools
 		}
 	} 
 
-	struct XmlBase
+	struct PropertiesBase
 	{
-		XmlBase(){}
+		PropertiesBase(){}
 	};
 
 } // KruncherTools
