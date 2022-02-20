@@ -55,6 +55,7 @@ namespace KruncherDirectory
 		Directory() : recurse( false ) {}
 		Directory( const string& _where ) : where( _where ), recurse( false ) {}
 		Directory( const string& _where, const bool _recurse ) : where( _where ), recurse( _recurse ) {}
+		virtual ~Directory(){}
 		const Directory& operator = (const Directory& that ) const
 		{
 			if ( this == &that ) return *this;
@@ -67,8 +68,10 @@ namespace KruncherDirectory
 			where=_where;
 			recurse=_recurse;
 		}
+
 		void operator()( const mode_t mode=0777 )
 		{
+			throw string("BRIDGE OUT");
 #if 0
 			split( where, "/" );
 			if ( empty() ) return;
@@ -82,10 +85,10 @@ namespace KruncherDirectory
 				if ( DirectoryExists( sspath.str() ) ) continue;
 				cerr << "creating " << sspath.str() << endl;
 				mkdir( sspath.str().c_str(), mode );
-				
 			}
 #endif
 		}
+
 		virtual operator bool ();
 		const stringset& Directories() { return directories; }
 		protected:
@@ -124,7 +127,12 @@ namespace KruncherDirectory
 		Directory& D( *this );
 		struct dirent *pDirent( NULL ); 
 		DIR* pDir( opendir (where.c_str() ) );
-		if ( ! pDir ) throw string("Directory:" ) + where;
+		if ( ! pDir )
+		{
+			 //throw string("Directory:" ) + where;
+			Log( VERB_ALWAYS, "Cannot open directory", where ) ;
+			return false;
+		}
 		pDirent = readdir(pDir);
 		while ((pDirent = readdir(pDir)) != NULL) D+=*pDirent;
 		closedir (pDir);

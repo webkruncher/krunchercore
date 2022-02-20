@@ -1119,6 +1119,8 @@ namespace KruncherTools
 
 
 			if ( execvp( (const char*) exe.c_str(),  &args[0] ) < 0 ) return ; 
+			close( fd2[ 1 ] );
+			close( fd1[ 0 ] );
 
 		} else {
 			// Parent
@@ -1142,7 +1144,11 @@ namespace KruncherTools
 				out << line;
 			}
 
+			close( fd1[1] );
+			close( fd2[0] );
+
 		}
+		wait(NULL);
 	} 
 
 	struct PropertiesBase {};
