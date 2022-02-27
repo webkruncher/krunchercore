@@ -71,7 +71,7 @@ namespace KruncherDirectory
 
 		void operator()( const mode_t mode=0777 )
 		{
-			throw string("BRIDGE OUT");
+			throw string("BRIDGE OUT - DIRECTORY OPERATOR 777");
 #if 0
 			split( where, "/" );
 			if ( empty() ) return;
