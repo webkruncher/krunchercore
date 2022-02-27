@@ -71,11 +71,11 @@ namespace KruncherDirectory
 
 		void operator()( const mode_t mode=0777 )
 		{
-			throw string("BRIDGE OUT - DIRECTORY OPERATOR 777");
-#if 0
+	cerr << yellow << "Directory:" << where << fence;
+
 			split( where, "/" );
 			if ( empty() ) return;
-			string& start( *begin() );
+			string start( *begin() );
 			if ( start == "" )  start="/";
 			stringstream sspath;
 			for ( iterator it=begin();it!=end();it++ )
@@ -83,10 +83,9 @@ namespace KruncherDirectory
 				sspath<<*it;
 				if ( sspath.str()!="/" ) sspath<<"/";
 				if ( DirectoryExists( sspath.str() ) ) continue;
-				cerr << "creating " << sspath.str() << endl;
+				cerr << "Creating " << sspath.str() << endl;
 				mkdir( sspath.str().c_str(), mode );
 			}
-#endif
 		}
 
 		virtual operator bool ();
